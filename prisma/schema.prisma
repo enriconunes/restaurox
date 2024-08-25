@@ -1,12 +1,12 @@
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db" //db local provisoria
+  url      = "file:./dev.db" // db local provisória
 }
- 
+
 generator client {
   provider = "prisma-client-js"
 }
- 
+
 model User {
   id            String          @id @default(cuid())
   name          String?
@@ -16,17 +16,17 @@ model User {
   accounts      Account[]
   sessions      Session[]
   todos         Todo[]
+  restaurants   Restaurant[]    // Relacionamento com múltiplos restaurantes
 
-  stripeCustomerId         String? //id do cliente dentro do stripe
-  stripeSubscriptionId     String? //id da assinatura dele
-  stripeSubscriptionStatus String? //status da assinatura
-  stripePriceId            String? //id do preço da assinatura - usado para identificar o plano atual
-  
+  stripeCustomerId         String? // id do cliente dentro do Stripe
+  stripeSubscriptionId     String? // id da assinatura dele
+  stripeSubscriptionStatus String? // status da assinatura
+  stripePriceId            String? // id do preço da assinatura - usado para identificar o plano atual
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// contas vinculadas a um user
 model Account {
   userId            String
   type              String
@@ -39,42 +39,124 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
 
-// controle de sessao
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// token para verificacao por email (magic login ou redefinicao de senha)
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
- 
 
 model Todo {
-  id            String   @id @default(cuid())
-  title         String 
-  user          User     @relation(fields: [userId], references: [id])
-  userId        String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  doneAt        DateTime?
+  id        String   @id @default(cuid())
+  title     String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  doneAt    DateTime?
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  identifier      String
+  status          String
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  clientName      String?
+  orderType       String
+  totalPrice      String
+  table           String?
+  clientContact   String?
+  clientAddress   String?
+  orderItems      OrderItem[]
+}
+
+model Restaurant {
+  id                    String          @id @default(cuid())
+  name                  String          @default("Nome do Seu Restaurante")
+  address               String          @default("Endereço do seu restaurante")
+  contactNumber         String          @default("11999999999")
+  instagramProfileName  String          @default("Indefinido")
+  doDelivery            Boolean         @default(true)
+  deliveryFee           String          @default("5.00")
+  deliveryTimeMinutes   String          @default("30")
+  avatarUrl             String          @default("https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg")
+  coverUrl              String          @default("https://utfs.io/f/c63b9ac8-ad79-48f0-a8b3-2c9cc5d4fd66-vyr1ud.png")
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  userId                String
+  colorThemeCode        String          @default("#b91c1c")
+
+  user          User      @relation(fields: [userId], references: [id])
+  itemCategories ItemCategory[]
+  openingHours   OpeningHours[]
+}
+
+model ItemCategory {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  restaurantId String
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  items      Item[]
+}
+
+model Item {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  price        String
+  imageUrl     String   @default("https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg")
+  isAvailable  Boolean  @default(true)
+  isVegan      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  categoryId   String
+
+  category ItemCategory @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  amount    String
+  itemId    String
+  orderId   String
+
+  item  Item  @relation(fields: [itemId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model OpeningHours {
+  id          String   @id @default(cuid())
+  dayOfWeek   String   @default("Dia da Semana")
+  openTime    String   @default("08:00")
+  closeTime   String   @default("18:00")
+  isOpen      Boolean  @default(true)
+  restaurantId String
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 }

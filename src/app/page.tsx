@@ -1,9 +1,10 @@
-import Image from "next/image";
+import TailwindColorMosaic from "@/components/dashboard/tailwind-color-mosaic";
 
 export default function Home() {
   return (
     <main>
-      landing page
+      <span className="uppercase font-bolder">landing page</span>
+      <TailwindColorMosaic />
     </main>
   );
 }
