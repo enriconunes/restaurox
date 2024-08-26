@@ -45,7 +45,7 @@ export function MainSidebar({ user }: MainSidebarProps) {
           <DashboardSidebarNavMain>
             <DashboardSidebarNavLink href="/app" active={isActive('/app')}>
               <HomeIcon className="w-3 h-3 mr-3" />
-              Tarefas
+              Seu restaurante
             </DashboardSidebarNavLink>
             <DashboardSidebarNavLink
               href="/app/settings"
