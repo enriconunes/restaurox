@@ -9,14 +9,19 @@ import { TodoDataTable } from './_components/todo-data-table'
 import { TodoUpsertSheet } from './_components/todo-upsert-sheet'
 import { Button } from '@/components/ui/button'
 import { PlusIcon } from '@radix-ui/react-icons'
-import { getUserTodos } from './actions'
+import { getUserRestaurantDetails, getUserTodos } from './actions'
 import RestaurantMainDetails from './_components/restaurant-main-datails'
 import AddNewCategory from './_components/add-new-category'
 import CategoriesWithItems from './_components/categories-with-items'
 import QRCodeComponent from './_components/qr-code'
+import { auth } from '@/services/auth' // Importa o serviço de autenticação
 
 export default async function Page() {
-  const todos = await getUserTodos()
+  // const todos = await getUserTodos()
+
+  const session = await auth() // Obtém a sessão de autenticação
+
+  const { error, data } = await getUserRestaurantDetails(session?.user.id as string);
 
   return (
     <DashboardPage>
@@ -35,10 +40,10 @@ export default async function Page() {
       </DashboardPageHeader>
       <DashboardPageMain>
         {/* <TodoDataTable data={todos} /> */}
-        <RestaurantMainDetails />
+        <RestaurantMainDetails data={data}/>
         <h3 className='mx-auto text-center text-lg font-medium mt-3'>Detalhes do seu cardápio</h3>
-        <AddNewCategory />
-        <CategoriesWithItems />
+        <AddNewCategory data={data}/>
+        <CategoriesWithItems data={data}/>
         <QRCodeComponent idUser='123' restaurantName='lenha na brasa'/>
       </DashboardPageMain>
     </DashboardPage>

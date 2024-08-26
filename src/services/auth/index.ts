@@ -4,6 +4,7 @@ import EmailProvider from "next-auth/providers/nodemailer"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "../database"
 import { createStripeCustomer } from "../stripe"
+import { setupNewClientModels } from "@/app/auth/actions"
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
@@ -25,10 +26,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // essa funcao recebe o nome e email do user que acabou de se registrar
     // e cria um novo registro dele nos registros do stripe com plano free associado
     createUser: async (message) => {
+      // funcao para criar um novo restaurante associado ao novo user
+      await setupNewClientModels(message.user.id as string)
+
       await createStripeCustomer({
         name: message.user.name as string,
         email: message.user.email as string,
       })
+
     }
   }
 })

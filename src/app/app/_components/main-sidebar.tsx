@@ -12,7 +12,7 @@ import {
   DashboardSidebarFooter,
 } from '@/components/dashboard/sidebar'
 import { usePathname } from 'next/navigation'
-import { HomeIcon, MixerVerticalIcon } from '@radix-ui/react-icons'
+import { HomeIcon, GearIcon, Pencil2Icon  } from '@radix-ui/react-icons'
 import { UserDropdown } from './user-dropdown'
 // import { Logo } from '@/components/logo'
 import { Session } from 'next-auth'
@@ -45,13 +45,17 @@ export function MainSidebar({ user }: MainSidebarProps) {
           <DashboardSidebarNavMain>
             <DashboardSidebarNavLink href="/app" active={isActive('/app')}>
               <HomeIcon className="w-3 h-3 mr-3" />
-              Seu restaurante
+              Painel principal
+            </DashboardSidebarNavLink>
+            <DashboardSidebarNavLink href="/app/personalize" active={isActive('/app/personalize')}>
+              <Pencil2Icon className="w-3 h-3 mr-3" />
+              Personalizações
             </DashboardSidebarNavLink>
             <DashboardSidebarNavLink
               href="/app/settings"
               active={isActive('/app/settings')}
             >
-              <MixerVerticalIcon className="w-3 h-3 mr-3" />
+              <GearIcon className="w-3 h-3 mr-3" />
               Configurações
             </DashboardSidebarNavLink>
           </DashboardSidebarNavMain>

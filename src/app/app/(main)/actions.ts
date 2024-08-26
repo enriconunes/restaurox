@@ -136,3 +136,41 @@ export async function deleteTodo(input: z.infer<typeof deleteTodoSchema>) {
     data: 'Todo deleted successfully', // Retorna uma mensagem de sucesso
   }
 }
+
+export const getUserRestaurantDetails = async (idUser: string) => {
+  try {
+    // Busca o primeiro restaurante associado ao usuário
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        userId: idUser,
+      },
+      include: {
+        openingHours: true, // Incluir horários de funcionamento
+        itemCategories: {
+          include: {
+            items: true, // Incluir itens de cada categoria
+          },
+        },
+      },
+    });
+
+    if (!restaurant) {
+      return {
+        error: 'Restaurante não encontrado para este usuário',
+        data: null,
+      };
+    }
+
+    return {
+      error: null, // Nenhum erro ocorreu
+      data: restaurant, // Dados do restaurante com horários e categorias
+    };
+  } catch (error) {
+    console.error('Erro ao obter detalhes do restaurante do usuário:', error);
+
+    return {
+      error: 'Falha ao obter detalhes do restaurante do usuário',
+      data: null,
+    };
+  }
+};
