@@ -5,6 +5,7 @@ import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const tailwindColors = [
   { name: 'gray', shades: { 400: '#9ca3af', 700: '#374151', 950: '#030712' }},
@@ -28,47 +29,52 @@ export default function TailwindColorSelectorForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mt-4">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Alterar Tema dos Elementos do Cardápio</CardTitle>
+        <CardTitle>Alterar Tema do Cardápio</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label className="text-base">Escolha uma cor primária para personalizar o seu cardápio:</Label>
-            {tailwindColors.map((colorFamily) => (
-              <div key={colorFamily.name} className="grid grid-cols-3 gap-2">
-                {Object.entries(colorFamily.shades).map(([shade, hex]) => (
-                  <button
-                    key={`${colorFamily.name}-${shade}`}
-                    type="button"
-                    className={`w-full h-12 rounded-md transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50 ${
-                      selectedColor === hex ? 'ring-2 ring-offset-2 ring-opacity-50 scale-105' : ''
-                    }`}
-                    style={{ backgroundColor: hex }}
-                    onClick={() => setSelectedColor(hex)}
-                    aria-label={`Select color ${hex}`}
-                  >
-                    <span className="sr-only">Select color {hex}</span>
-                  </button>
-                ))}
-              </div>
-            ))}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium mb-2 block">Escolha uma cor primária:</Label>
+            <div className="grid grid-cols-9 gap-1">
+              {tailwindColors.map((colorFamily) =>
+                Object.entries(colorFamily.shades).map(([shade, hex]) => (
+                  <TooltipProvider key={`${colorFamily.name}-${shade}`}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className={`w-full aspect-square rounded-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50 ${
+                            selectedColor === hex ? 'ring-2 ring-offset-2 ring-opacity-50 scale-110' : ''
+                          }`}
+                          style={{ backgroundColor: hex }}
+                          onClick={() => setSelectedColor(hex)}
+                          aria-label={`Select color ${colorFamily.name} ${shade}`}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{colorFamily.name} {shade}</p>
+                        <p>{hex}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))
+              )}
+            </div>
           </div>
           {selectedColor && (
-            <div className="text-lg">
-              <Label>Cor selecionada:</Label>
-              <div className="flex items-center space-x-2 mt-1">
-                <div 
-                  className="w-6 h-6 rounded-full border border-gray-300"
-                  style={{ backgroundColor: selectedColor }}
-                ></div>
-                <span className="font-bold">{selectedColor}</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Label className="text-sm font-medium">Cor selecionada:</Label>
+              <div 
+                className="w-4 h-4 rounded-full border border-gray-300"
+                style={{ backgroundColor: selectedColor }}
+              ></div>
+              <span className="text-sm font-bold">{selectedColor}</span>
             </div>
           )}
           <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 text-white" disabled={!selectedColor}>
-            <Save className="mr-2 h-4 w-4" /> Salvar cor selecionada
+            <Save className="mr-2 h-4 w-4" /> Salvar cor
           </Button>
         </form>
       </CardContent>

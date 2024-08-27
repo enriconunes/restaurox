@@ -35,9 +35,9 @@ export default function RestaurantMainDetails({ data }: RestaurantMainDetailsPro
           <div className="text-center sm:text-left">
             <h1 className="text-xl sm:text-2xl font-bold mb-1">{name}</h1>
             <p className="text-muted-foreground text-sm mb-2">{address}</p>
-            <Link href="/">
+            <Link href="/app/personalize">
               <Button variant="outline" size="sm" className="bg-red-700 hover:bg-red-800 text-white border-red-600">
-                <Edit className="mr-2 h-4 w-4" /> Editar
+                <Edit className="mr-2 h-4 w-4" /> Personalizar
               </Button>
             </Link>
           </div>

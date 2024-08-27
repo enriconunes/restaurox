@@ -1,4 +1,4 @@
-import { ThemeForm } from './_componens/form'
+import { ThemeForm } from "./_components/form"
 
 export default function Page() {
   return <ThemeForm />

@@ -65,7 +65,7 @@ export default function EditOperatingHours() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mt-4">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Editar horários de funcionamento</CardTitle>
       </CardHeader>

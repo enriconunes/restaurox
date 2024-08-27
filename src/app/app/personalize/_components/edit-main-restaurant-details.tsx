@@ -1,163 +1,213 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Camera, Save } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { toast } from '@/components/ui/use-toast';
+import { useRouter } from 'next/navigation';
+import { updateRestaurantDetailsByRestaurantId } from '../(main)/actions';
+import { updateRestaurantSchema } from '../schemas';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import InputUploadThing from './input-upload-thing';
 
-interface RestaurantInfo {
-  name: string
-  address: string
-  phone: string
-  instagram: string
-  deliveryFee: string
-  deliveryTime: string
-  isDeliveryAvailable: boolean
-  logoUrl: string
+interface RestaurantData {
+  id: string;
+  name: string;
+  address: string;
+  contactNumber: string;
+  instagramProfileName: string;
+  doDelivery: boolean;
+  deliveryFee: string;
+  deliveryTimeMinutes: string;
+  avatarUrl: string;
 }
 
-export default function EditRestaurantInfo() {
-  const [restaurantInfo, setRestaurantInfo] = useState<RestaurantInfo>({
-    name: 'Pizzaria Lenha na Brasa',
-    address: 'Rua das Andorinhas nº 24, Mirante Caravelas',
-    phone: '73988909876',
-    instagram: '_lenhanabrasa_',
-    deliveryFee: '5,80',
-    deliveryTime: '30',
-    isDeliveryAvailable: true,
-    logoUrl: 'https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg'
-  })
+interface EditRestaurantInfoProps {
+  data: RestaurantData;
+}
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setRestaurantInfo(prev => ({ ...prev, [name]: value }))
-  }
+export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setRestaurantInfo(prev => ({ ...prev, isDeliveryAvailable: checked }))
-  }
+  const form = useForm<z.infer<typeof updateRestaurantSchema>>({
+    resolver: zodResolver(updateRestaurantSchema),
+    defaultValues: {
+      name: data.name,
+      address: data.address,
+      contactNumber: data.contactNumber,
+      instagramProfileName: data.instagramProfileName,
+      deliveryFee: data.deliveryFee,
+      deliveryTimeMinutes: data.deliveryTimeMinutes,
+      doDelivery: data.doDelivery,
+      avatarUrl: data.avatarUrl,
+    },
+  });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setRestaurantInfo(prev => ({ ...prev, logoUrl: reader.result as string }))
+  const onSubmit = async (updatedInfo: z.infer<typeof updateRestaurantSchema>) => {
+    setIsSubmitting(true);
+    try {
+      const result = await updateRestaurantDetailsByRestaurantId(data.id, updatedInfo);
+      if (result.error) {
+        throw new Error(result.error);
       }
-      reader.readAsDataURL(file)
+      toast({
+        title: 'Sucesso',
+        description: 'As informações do restaurante foram atualizadas com sucesso.',
+      });
+      router.refresh();
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao atualizar o restaurante.',
+        variant: 'destructive',
+      });
+      console.error('Erro ao atualizar o restaurante:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Restaurant info updated:', restaurantInfo)
-    // Here you would typically send the updated info to your backend
-  }
+  };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Editar informações do restaurante</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <img
-                src={restaurantInfo.logoUrl}
-                alt="Logo do restaurante"
-                className="w-32 h-32 rounded-lg object-cover"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Editar informações do restaurante</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-6">
+              <div className="w-full sm:w-1/3">
+                <InputUploadThing
+                  currentImageUrl={form.watch('avatarUrl')}
+                  onImageChange={(file, previewUrl) =>
+                    form.setValue('avatarUrl', previewUrl || '')
+                  }
+                />
+              </div>
+              <div className="w-full sm:w-2/3 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome do restaurante</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Digite o nome do restaurante" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contactNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Número de telefone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Digite o número de telefone" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endereço</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o endereço" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="instagramProfileName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Perfil do Instagram</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o perfil do Instagram" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="deliveryFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Taxa de entrega</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Digite a taxa de entrega" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="logo-upload" className="absolute bottom-0 right-0 bg-background rounded-full p-2 cursor-pointer">
-                <Camera className="h-5 w-5" />
-              </Label>
-              <Input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
+              <FormField
+                control={form.control}
+                name="deliveryTimeMinutes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tempo de entrega (minutos)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Digite o tempo de entrega" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome do restaurante</Label>
-            <Input
-              id="name"
-              name="name"
-              value={restaurantInfo.name}
-              onChange={handleInputChange}
+            <FormField
+              control={form.control}
+              name="doDelivery"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Delivery disponível
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
             />
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">Endereço</Label>
-            <Input
-              id="address"
-              name="address"
-              value={restaurantInfo.address}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Número de telefone</Label>
-            <Input
-              id="phone"
-              name="phone"
-              value={restaurantInfo.phone}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="instagram">Perfil do Instagram</Label>
-            <Input
-              id="instagram"
-              name="instagram"
-              value={restaurantInfo.instagram}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="deliveryFee">Valor da taxa de entrega (delivery)</Label>
-            <Input
-              id="deliveryFee"
-              name="deliveryFee"
-              value={restaurantInfo.deliveryFee}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="deliveryTime">Tempo médio do delivery (em minutos)</Label>
-            <Input
-              id="deliveryTime"
-              name="deliveryTime"
-              value={restaurantInfo.deliveryTime}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isDeliveryAvailable"
-              checked={restaurantInfo.isDeliveryAvailable}
-              onCheckedChange={handleCheckboxChange}
-            />
-            <Label htmlFor="isDeliveryAvailable">Delivery disponível</Label>
-          </div>
-
-          <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 text-white">
-            <Save className="mr-2 h-4 w-4" /> Salvar descrição
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  )
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? 'Salvando...' : 'Salvar alterações'}
+        </Button>
+      </form>
+    </Form>
+  );
 }
