@@ -24,7 +24,7 @@ export default async function Page() {
   const { error, data } = await getUserRestaurantDetails(session?.user.id as string);
 
   return (
-    <DashboardPage>
+    <DashboardPage className='max-h-screen overflow-y-scroll'>
       <DashboardPageHeader className=''>
         <DashboardPageHeaderTitle>Seu restaurante</DashboardPageHeaderTitle>
         <DashboardPageHeaderNav>

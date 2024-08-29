@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import InputUploadThing from './input-upload-thing';
+import { useUploadThing } from '@/utils/uploadthing';
 
 interface RestaurantData {
   id: string;
@@ -41,6 +42,8 @@ interface EditRestaurantInfoProps {
 export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { startUpload, isUploading } = useUploadThing("imageUploader");
 
   const form = useForm<z.infer<typeof updateRestaurantSchema>>({
     resolver: zodResolver(updateRestaurantSchema),
@@ -59,10 +62,26 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
   const onSubmit = async (updatedInfo: z.infer<typeof updateRestaurantSchema>) => {
     setIsSubmitting(true);
     try {
-      const result = await updateRestaurantDetailsByRestaurantId(data.id, updatedInfo);
+      let newAvatarUrl = updatedInfo.avatarUrl;
+
+      if (selectedFile) {
+        const uploadResult = await startUpload([selectedFile]);
+        if (uploadResult && uploadResult[0]) {
+          newAvatarUrl = uploadResult[0].url;
+        } else {
+          throw new Error("Failed to upload image");
+        }
+      }
+
+      const result = await updateRestaurantDetailsByRestaurantId(data.id, {
+        ...updatedInfo,
+        avatarUrl: newAvatarUrl,
+      });
+
       if (result.error) {
         throw new Error(result.error);
       }
+
       toast({
         title: 'Sucesso',
         description: 'As informações do restaurante foram atualizadas com sucesso.',
@@ -90,11 +109,20 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="w-full sm:w-1/3">
-                <InputUploadThing
-                  currentImageUrl={form.watch('avatarUrl')}
-                  onImageChange={(file, previewUrl) =>
-                    form.setValue('avatarUrl', previewUrl || '')
-                  }
+                <FormField
+                  control={form.control}
+                  name="avatarUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <InputUploadThing
+                          currentImageUrl={field.value}
+                          onImageSelect={(file) => setSelectedFile(file)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
               <div className="w-full sm:w-2/3 space-y-4">
@@ -204,8 +232,8 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
           </CardContent>
         </Card>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Salvando...' : 'Salvar alterações'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || isUploading}>
+          {isSubmitting || isUploading ? 'Salvando...' : 'Salvar alterações'}
         </Button>
       </form>
     </Form>

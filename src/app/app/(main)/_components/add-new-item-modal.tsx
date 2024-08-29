@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Image as ImageIcon } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,58 +17,94 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { InputUploadThingItem } from './input-upload-thing-item'
+import { useUploadThing } from '@/utils/uploadthing'
+import { toast } from '@/components/ui/use-toast'
+import { Item } from '../types'
+
+import { createNewItem } from '../actions'
+
+const newItemSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  description: z.string().max(255, 'Descrição deve ter no máximo 255 caracteres'),
+  price: z.string().min(1, 'Preço é obrigatório'),
+  isVegan: z.boolean(),
+  isAvailable: z.boolean(),
+  imageUrl: z.string().optional(),
+})
+
+type NewItemFormValues = z.infer<typeof newItemSchema>
 
 interface AddNewItemModalProps {
-  onAddItem: (item: {
-    name: string
-    description: string
-    price: string
-    imageUrl: string
-    isAvailable: boolean
-    isVegan: boolean
-  }) => void
+  categoryId: string;
+  onAddItem: (item: Item) => void;
 }
 
-export default function AddNewItemModal({ onAddItem }: AddNewItemModalProps) {
+export default function AddNewItemModal({ categoryId, onAddItem }: AddNewItemModalProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [newItem, setNewItem] = useState({
-    name: '',
-    description: '',
-    price: '',
-    imageUrl: '',
-    isAvailable: true,
-    isVegan: false,
-  })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const { startUpload, isUploading } = useUploadThing("imageUploader")
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target
-    setNewItem(prev => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    setNewItem(prev => ({
-      ...prev,
-      [name]: checked,
-    }))
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onAddItem(newItem)
-    setIsOpen(false)
-    setNewItem({
+  const form = useForm<NewItemFormValues>({
+    resolver: zodResolver(newItemSchema),
+    defaultValues: {
       name: '',
       description: '',
       price: '',
-      imageUrl: '',
-      isAvailable: true,
       isVegan: false,
-    })
+      isAvailable: true,
+      imageUrl: '',
+    },
+  })
+
+  const handleSubmit = async (values: NewItemFormValues) => {
+    try {
+      let newImageUrl = values.imageUrl
+
+      if (selectedFile) {
+        const uploadResult = await startUpload([selectedFile])
+        if (uploadResult && uploadResult[0]) {
+          newImageUrl = uploadResult[0].url
+        } else {
+          throw new Error("Failed to upload image")
+        }
+      }
+
+      const newItemData: Item = {
+        ...values,
+        id: Date.now().toString(),
+        imageUrl: newImageUrl || "https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg",
+        categoryId: categoryId,
+      }
+
+      const result = await createNewItem(newItemData)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      if (result.data) {
+        onAddItem(result.data)
+        setIsOpen(false)
+        form.reset()
+        setSelectedFile(null)
+
+        toast({
+          title: 'Sucesso',
+          description: 'Novo item adicionado com sucesso.',
+        })
+      } else {
+        throw new Error("Failed to create new item.")
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao adicionar o novo item.',
+        variant: 'destructive',
+      })
+      console.error('Erro ao adicionar novo item:', error)
+    }
   }
 
   return (
@@ -75,102 +114,125 @@ export default function AddNewItemModal({ onAddItem }: AddNewItemModalProps) {
           <Plus className="h-4 w-4 mr-2" /> Adicionar novo item dessa categoria
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Item</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="imageUrl" className="sr-only">Imagem</Label>
-            <div className="h-32 w-full border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer hover:border-muted-foreground/50">
-              {newItem.imageUrl ? (
-                <img
-                  src={newItem.imageUrl}
-                  alt="Preview"
-                  className="h-full w-full object-cover rounded-md"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-1">
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <InputUploadThingItem
+                          currentImageUrl={field.value || ''}
+                          onImageSelect={(file) => setSelectedFile(file)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              ) : (
-                <div className="text-center">
-                  <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <span className="mt-2 block text-sm font-semibold text-muted-foreground">
-                    Adicionar imagem
-                  </span>
-                </div>
+              </div>
+              <div className="md:col-span-1 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome do item</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o nome do item" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o preço" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Digite a descrição"
+                      className="resize-none"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <div className="text-sm text-muted-foreground text-right">
+                    {field.value.length}/255
+                  </div>
+                </FormItem>
               )}
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    const reader = new FileReader()
-                    reader.onloadend = () => {
-                      setNewItem(prev => ({ ...prev, imageUrl: reader.result as string }))
-                    }
-                    reader.readAsDataURL(file)
-                  }
-                }}
-                className="hidden"
+            />
+            <div className="flex justify-between">
+              <FormField
+                control={form.control}
+                name="isVegan"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Item vegano
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isAvailable"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Está disponível
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="name" className="sr-only">Nome do item</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Digite o nome do item"
-              value={newItem.name}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="price" className="sr-only">Preço</Label>
-            <Input
-              id="price"
-              name="price"
-              placeholder="Digite o preço"
-              value={newItem.price}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="description" className="sr-only">Descrição</Label>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="Digite a descrição"
-              value={newItem.description}
-              onChange={handleInputChange}
-              className="resize-none"
-              rows={3}
-            />
-            <div className="text-sm text-muted-foreground text-right">
-              {newItem.description.length}/255
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isVegan"
-              checked={newItem.isVegan}
-              onCheckedChange={(checked) => handleCheckboxChange('isVegan', checked as boolean)}
-            />
-            <Label htmlFor="isVegan">Item vegano</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isAvailable"
-              checked={newItem.isAvailable}
-              onCheckedChange={(checked) => handleCheckboxChange('isAvailable', checked as boolean)}
-            />
-            <Label htmlFor="isAvailable">Está disponível</Label>
-          </div>
-          <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 text-white">
-            Adicionar
-          </Button>
-        </form>
+            <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 text-white" disabled={isUploading}>
+              {isUploading ? 'Adicionando...' : 'Adicionar'}
+            </Button>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
