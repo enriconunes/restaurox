@@ -50,7 +50,8 @@ export function ThemeForm() {
         <Card>
           <CardHeader>
             <CardTitle>Tema</CardTitle>
-            <CardDescription>Selecione o tema para o painel.</CardDescription>
+            <CardDescription>Selecione o tema para o seu sistema.</CardDescription>
+            <CardDescription className='text-xs'>*Essa configuração só será vista por você, não impactando no cardápio visto por seus clientes.</CardDescription>
           </CardHeader>
           <CardContent>
             <FormField
@@ -86,7 +87,7 @@ export function ThemeForm() {
                           </div>
                         </div>
                         <span className="block w-full p-2 text-center font-normal">
-                          Light
+                          Modo claro
                         </span>
                       </FormLabel>
                     </FormItem>
@@ -112,7 +113,7 @@ export function ThemeForm() {
                           </div>
                         </div>
                         <span className="block w-full p-2 text-center font-normal">
-                          Dark
+                          Modo escuro
                         </span>
                       </FormLabel>
                     </FormItem>

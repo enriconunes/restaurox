@@ -41,13 +41,15 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
 
   const handleSave = async (categoryId: string) => {
     const categoryToUpdate = categories.find(category => category.id === categoryId)
+
+    console.log("Nome: ", categoryToUpdate?.name)
     
     if (categoryToUpdate) {
       try {
         await upsertCategory({ id: categoryId, name: categoryToUpdate.name, restaurantId: data?.id })
         toast({
-          title: 'Success',
-          description: 'Category name has been updated successfully.',
+          title: 'Sucesso',
+          description: 'O nome da categoria foi atualizado com sucesso.',
         })
 
         setCategories(categories.map(category => 
@@ -55,8 +57,8 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
         ))
       } catch (error) {
         toast({
-          title: 'Error',
-          description: 'Failed to update category name. Please try again.',
+          title: 'Erro',
+          description: 'Erro ao atualizar nome da categoria. Por favor, tente novamente.',
         })
       }
     }

@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Save } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import React, { useState, useEffect } from 'react';
+import { Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const tailwindColors = [
   { name: 'gray', shades: { 400: '#9ca3af', 700: '#374151', 950: '#030712' }},
@@ -17,16 +17,28 @@ const tailwindColors = [
   { name: 'blue', shades: { 400: '#60a5fa', 700: '#1d4ed8', 950: '#172554' }},
   { name: 'purple', shades: { 400: '#a78bfa', 700: '#7e22ce', 950: '#3b0764' }},
   { name: 'pink', shades: { 400: '#f472b6', 700: '#be185d', 950: '#500724' }},
-]
+];
 
-export default function TailwindColorSelectorForm() {
-  const [selectedColor, setSelectedColor] = useState<string | null>(null)
+// Adiciona a prop 'data' ao componente
+interface TailwindColorSelectorFormProps {
+  data: string | null; // Defina como null caso o tema de cor não exista
+}
+
+export default function TailwindColorSelectorForm({ data }: TailwindColorSelectorFormProps) {
+  const [selectedColor, setSelectedColor] = useState<string | null>(data);
+
+  // Adiciona um efeito para atualizar o estado inicial quando a 'data' mudar
+  useEffect(() => {
+    if (data) {
+      setSelectedColor(data);
+    }
+  }, [data]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Selected color:', selectedColor)
-    // Here you would typically send the selected color to your backend
-  }
+    e.preventDefault();
+    console.log('Selected color:', selectedColor);
+    // Aqui você normalmente enviaria a cor selecionada para o backend
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -36,8 +48,9 @@ export default function TailwindColorSelectorForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label className="text-sm font-medium mb-2 block">Escolha uma cor primária:</Label>
-            <div className="grid grid-cols-9 gap-1">
+            <Label className="text-sm block mb-2">Escolha uma cor primária.</Label>
+            <p className='text-xs leading-2'>*Essa cor será usada para personalizar os elementos do seu cardápio, como o <span className='font-bold'>banner</span> por trás da logomarca e os <span className='font-bold'>botões de interação</span>.</p>
+            <div className="grid grid-cols-9 gap-1 mt-4">
               {tailwindColors.map((colorFamily) =>
                 Object.entries(colorFamily.shades).map(([shade, hex]) => (
                   <TooltipProvider key={`${colorFamily.name}-${shade}`}>
@@ -79,5 +92,5 @@ export default function TailwindColorSelectorForm() {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -59,7 +59,7 @@ export function ProfileForm({ defaultValues }: ProfileFormProps) {
           <CardHeader>
             <CardTitle>Nome</CardTitle>
             <CardDescription>
-              Este será o nome exibido publicamente.
+              Este é o seu nome de usuário e não será exibido publicamente.
             </CardDescription>
           </CardHeader>
           <CardContent>

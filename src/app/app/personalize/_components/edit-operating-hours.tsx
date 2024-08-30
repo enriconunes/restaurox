@@ -1,17 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { updateOperatingHours } from '../(main)/actions'
+import { toast } from '@/components/ui/use-toast'
+
+interface OpeningHours {
+  id: string;
+  dayOfWeek: string;
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
+  restaurantId: string;
+}
+
+interface EditOperatingHoursProps {
+  data: OpeningHours[];
+  userId: string; // Adiciona userId como prop
+}
 
 interface DaySchedule {
-  isOpen: boolean
-  openTime: string
-  closeTime: string
+  isOpen: boolean;
+  openTime: string;
+  closeTime: string;
 }
 
 type WeekSchedule = {
@@ -28,41 +44,78 @@ const daysOfWeek = [
   { key: 'sunday', label: 'Domingo' },
 ] as const
 
-export default function EditOperatingHours() {
+export default function EditOperatingHours({ data, userId }: EditOperatingHoursProps) {
   const [schedule, setSchedule] = useState<WeekSchedule>({
-    monday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-    tuesday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-    wednesday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-    thursday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-    friday: { isOpen: true, openTime: '08:00', closeTime: '18:00' },
-    saturday: { isOpen: true, openTime: '10:00', closeTime: '16:00' },
-    sunday: { isOpen: false, openTime: '', closeTime: '' },
-  })
+    monday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+    tuesday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+    wednesday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+    thursday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+    friday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+    saturday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+    sunday: { isOpen: false, openTime: '00:00', closeTime: '00:00' },
+});
+
+
+  useEffect(() => {
+    const initialSchedule = daysOfWeek.reduce((acc, day) => {
+      const dayData = data.find(d => d.dayOfWeek.toLowerCase() === day.label.toLowerCase());
+      acc[day.key as keyof WeekSchedule] = dayData
+        ? {
+            isOpen: dayData.isOpen,
+            openTime: dayData.openTime,
+            closeTime: dayData.closeTime
+          }
+        : { isOpen: false, openTime: '', closeTime: '' };
+      return acc;
+    }, {} as WeekSchedule);
+    setSchedule(initialSchedule);
+  }, [data]);
 
   const handleToggleDay = (day: keyof WeekSchedule) => {
     setSchedule(prev => ({
       ...prev,
       [day]: { ...prev[day], isOpen: !prev[day].isOpen }
-    }))
-  }
+    }));
+  };
 
   const handleTimeChange = (day: keyof WeekSchedule, field: 'openTime' | 'closeTime', value: string) => {
     setSchedule(prev => ({
       ...prev,
       [day]: { ...prev[day], [field]: value }
-    }))
-  }
+    }));
+  };
 
   const validateTimeFormat = (time: string) => {
-    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/
-    return regex.test(time)
-  }
+    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    return regex.test(time);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Updated schedule:', schedule)
-    // Here you would typically send the updated schedule to your backend
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  const openingHoursData = Object.entries(schedule).map(([day, { isOpen, openTime, closeTime }]) => ({
+    dayOfWeek: daysOfWeek.find(d => d.key === day)?.label as string,
+    isOpen,
+    openTime,
+    closeTime,
+  }));
+
+  const { error, data } = await updateOperatingHours(userId, openingHoursData);
+  
+  if (error) {
+    console.error(error);
+    toast({
+        title: 'Erro.',
+        description: 'Erro ao alterar os horários de funcionamento. Por favor, tente novamente.',
+      });
+  } else {
+    toast({
+        title: 'Sucesso',
+        description: 'Os horários de funcionamento foram alterados com sucesso.',
+      });
   }
+};
+
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -108,5 +161,5 @@ export default function EditOperatingHours() {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

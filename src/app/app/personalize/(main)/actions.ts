@@ -80,8 +80,7 @@ export const updateRestaurantDetailsByRestaurantId = async (
   }
 };
 
-
-
+// obter descricoes principais do restaurante a partir do id do user
 export const getMainRestaurantDescriptionByIdUser = async (idUser: string) => {
   try {
     // Buscar o primeiro restaurante associado ao idUser, incluindo o colorThemeCode e os horários de funcionamento
@@ -121,6 +120,135 @@ export const getMainRestaurantDescriptionByIdUser = async (idUser: string) => {
 
     return {
       error: 'Falha ao obter a descrição principal do restaurante',
+      data: null,
+    };
+  }
+};
+
+// obter horarios de funcionamento do restaurante atraves do id do user
+export const getOpeningHoursByIdUser = async (idUser: string) => {
+  try {
+    // Buscar o primeiro restaurante associado ao idUser, incluindo apenas os horários de funcionamento
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        userId: idUser,
+      },
+      select: {
+        openingHours: true, // Selecionar apenas os horários de funcionamento
+      },
+    });
+
+    // Verificar se o restaurante foi encontrado
+    if (!restaurant) {
+      return {
+        error: `Nenhum restaurante encontrado para o usuário com o ID: ${idUser}.`,
+        data: null,
+      };
+    }
+
+    return {
+      error: null, // Nenhum erro ocorreu
+      data: restaurant.openingHours, // Retornar apenas os horários de funcionamento do restaurante encontrado
+    };
+  } catch (error) {
+    console.error('Erro ao obter os horários de funcionamento do restaurante:', error);
+
+    return {
+      error: 'Falha ao obter os horários de funcionamento do restaurante',
+      data: null,
+    };
+  }
+};
+
+type OpeningHoursUpdateData = {
+  dayOfWeek: string; // Dia da semana, como "Segunda-feira"
+  isOpen: boolean;   // Se o restaurante está aberto ou fechado
+  openTime: string;  // Hora de abertura no formato "HH:MM"
+  closeTime: string; // Hora de fechamento no formato "HH:MM"
+};
+
+// atualizar os horarios de funcionamento do restaurante
+export const updateOperatingHours = async (idUser: string, openingHoursData: OpeningHoursUpdateData[]) => {
+  try {
+    // Buscar o primeiro restaurante associado ao idUser
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        userId: idUser,
+      },
+      select: {
+        id: true, // Obter o ID do restaurante
+      },
+    });
+
+    // Verificar se o restaurante foi encontrado
+    if (!restaurant) {
+      return {
+        error: `Nenhum restaurante encontrado para o usuário com o ID: ${idUser}.`,
+        data: null,
+      };
+    }
+
+    // Preparar as operações de atualização
+    const updateOperations = openingHoursData.map((openingHour) =>
+      prisma.openingHours.updateMany({
+        where: {
+          restaurantId: restaurant.id,
+          dayOfWeek: openingHour.dayOfWeek,
+        },
+        data: {
+          isOpen: openingHour.isOpen,
+          openTime: openingHour.openTime,
+          closeTime: openingHour.closeTime,
+        },
+      })
+    );
+
+    // Executar todas as operações de atualização em uma transação
+    await prisma.$transaction(updateOperations);
+
+    return {
+      error: null,
+      data: 'Horários de funcionamento atualizados com sucesso.',
+    };
+  } catch (error) {
+    console.error('Erro ao atualizar os horários de funcionamento do restaurante:', error);
+
+    return {
+      error: 'Falha ao atualizar os horários de funcionamento do restaurante',
+      data: null,
+    };
+  }
+};
+
+export const getRestaurantColorThemeByIdUser = async (idUser: string) => {
+  try {
+    // Buscar o primeiro restaurante associado ao idUser, incluindo apenas o colorThemeCode
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        userId: idUser,
+      },
+      select: {
+        colorThemeCode: true, // Selecionar apenas o colorThemeCode
+      },
+    });
+
+    // Verificar se o restaurante foi encontrado
+    if (!restaurant) {
+      return {
+        error: `Nenhum restaurante encontrado para o usuário com o ID: ${idUser}.`,
+        data: null,
+      };
+    }
+
+    return {
+      error: null, // Nenhum erro ocorreu
+      data: restaurant.colorThemeCode, // Retornar apenas o colorThemeCode do restaurante encontrado
+    };
+  } catch (error) {
+    console.error('Erro ao obter o tema de cor do restaurante:', error);
+
+    return {
+      error: 'Falha ao obter o tema de cor do restaurante',
       data: null,
     };
   }
