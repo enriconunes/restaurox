@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Trash2, Check } from 'lucide-react'
+import { Pencil, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { RestaurantData, Item, ItemCategory } from '../types'
 import AddNewItemModal from './add-new-item-modal'
-import { deleteCategory, upsertCategory, updateItem } from '../actions'
+import { deleteCategory, upsertCategory, updateItem, deleteItemById } from '../actions'
 import { toast } from '@/components/ui/use-toast'
 import {
   Dialog,
@@ -18,20 +18,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { EditItemButton } from './edit-item-modal'
+import { useRouter } from 'next/navigation'
 
 interface CategoriesWithItemsProps {
   data: RestaurantData | null
 }
 
 export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) {
-  const [categories, setCategories] = useState<ItemCategory[]>(
+  const [categories, setCategories] = useState<(ItemCategory & { isEditing: boolean, isExpanded: boolean })[]>(
     data?.itemCategories.map((category) => ({
       ...category,
       isEditing: false,
+      isExpanded: false,
     })) || []
   )
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
+  const router = useRouter()
 
   const handleEdit = (categoryId: string) => {
     setCategories(categories.map(category => 
@@ -41,8 +44,6 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
 
   const handleSave = async (categoryId: string) => {
     const categoryToUpdate = categories.find(category => category.id === categoryId)
-
-    console.log("Nome: ", categoryToUpdate?.name)
     
     if (categoryToUpdate) {
       try {
@@ -55,6 +56,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
         setCategories(categories.map(category => 
           category.id === categoryId ? { ...category, isEditing: false } : category
         ))
+        router.refresh()
       } catch (error) {
         toast({
           title: 'Erro',
@@ -79,6 +81,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
         })
 
         setCategories(categories.filter(category => category.id !== categoryToDelete))
+        router.refresh()
       } catch (error) {
         toast({
           title: 'Erro',
@@ -102,6 +105,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
         ? { ...category, items: [...category.items, newItem] }
         : category
     ))
+    router.refresh()
   }
 
   const handleUpdateItem = async (categoryId: string, updatedItem: Item) => {
@@ -112,6 +116,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
           ? { ...category, items: category.items.map(item => item.id === updatedItem.id ? updatedItem : item) }
           : category
       ))
+      router.refresh()
       toast({
         title: 'Sucesso',
         description: 'Item atualizado com sucesso.',
@@ -125,20 +130,61 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
     }
   }
 
+  const handleDeleteItem = async (categoryId: string, itemId: string) => {
+    try {
+      await deleteItemById(itemId)
+      setCategories(categories.map(category => 
+        category.id === categoryId
+          ? { ...category, items: category.items.filter(item => item.id !== itemId) }
+          : category
+      ))
+      router.refresh()
+      toast({
+        title: 'Sucesso',
+        description: 'Item excluído com sucesso.',
+      })
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao excluir o item.',
+        variant: 'destructive',
+      })
+      console.error('Erro ao excluir o item:', error)
+    }
+  }
+
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setCategories(categories.map(category =>
+      category.id === categoryId ? { ...category, isExpanded: !category.isExpanded } : category
+    ))
+  }
+
+  const formatPrice = (price: number) => {
+    return `R$ ${price.toFixed(2)}`
+  }
+
+  const isDiscountValid = (discount: Item['discount']) => {
+    if (!discount || discount.expiration === null) return false;
+    const expirationDate = new Date(discount.expiration);
+    return expirationDate > new Date();
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto p-6 space-y-6">
       {categories.map((category) => (
         <Card key={category.id} className="bg-background text-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            {category.isEditing ? (
-              <Input
-                value={category.name}
-                onChange={(e) => handleNameChange(category.id, e.target.value)}
-                className="font-semibold text-lg"
-              />
-            ) : (
-              <CardTitle>{category.name}</CardTitle>
-            )}
+            <div className="flex items-center space-x-2">
+              {category.isEditing ? (
+                <Input
+                  value={category.name}
+                  onChange={(e) => handleNameChange(category.id, e.target.value)}
+                  className="font-semibold text-lg"
+                />
+              ) : (
+                <CardTitle>{category.name}</CardTitle>
+              )}
+            </div>
             <div className="flex space-x-2">
               {category.isEditing ? (
                 <>
@@ -161,7 +207,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
               categoryId={category.id} 
               onAddItem={(newItem: Item) => handleAddItem(category.id, newItem)} 
             />
-            {category.items.map((item) => (
+            {category.items.slice(0, category.isExpanded ? undefined : 3).map((item) => (
               <Card className='mt-2' key={item.id}>
                 <CardContent className="p-4 flex items-center space-x-4">
                   <div className="w-16 h-16 flex-shrink-0">
@@ -174,16 +220,52 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
                   <div className="flex-grow">
                     <h3 className="font-semibold">{item.name}</h3>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
-                    <p className="text-sm font-medium">R$ {item.price}</p>
+                    <div className="flex items-center space-x-2">
+                      {item.discount && isDiscountValid(item.discount) ? (
+                        <>
+                          <p className="text-sm line-through text-muted-foreground">{formatPrice(parseFloat(item.price))}</p>
+                          <p className="text-sm font-medium text-red-600">{formatPrice(parseFloat(item.discount.newPrice))}</p>
+                          {item.discount.expiration && new Date(item.discount.expiration).getTime() !== new Date('9999-12-31T23:59:59.999Z').getTime() && (
+                            <p className="text-xs text-muted-foreground">
+                              Válido até {new Date(item.discount.expiration).toLocaleDateString('pt-BR')}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm font-medium">{formatPrice(parseFloat(item.price))}</p>
+                      )}
+                    </div>
                   </div>
                   <EditItemButton 
                     item={item}
                     onSave={(updatedItem: Item) => handleUpdateItem(category.id, updatedItem)} 
+                    onDelete={() => handleDeleteItem(category.id, item.id)} 
                   />
                 </CardContent>
               </Card>
             ))}
           </CardContent>
+          {category.items.length > 3 && (
+            <CardFooter>
+              <Button 
+                onClick={() => toggleCategoryExpansion(category.id)}
+                className="w-full"
+                variant="outline"
+              >
+                {category.isExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-2" />
+                    Mostrar menos
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    Ver todos os {category.items.length} itens
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       ))}
 

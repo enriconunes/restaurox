@@ -28,7 +28,15 @@ import { createNewItem } from '../actions'
 const newItemSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().max(255, 'Descrição deve ter no máximo 255 caracteres'),
-  price: z.string().min(1, 'Preço é obrigatório'),
+  price: z.string().refine(
+    (value) => {
+      const number = parseFloat(value);
+      return !isNaN(number) && number >= 0 && /^\d+(\.\d{1,2})?$/.test(value);
+    },
+    {
+      message: 'Preço deve ser um número positivo com no máximo duas casas decimais',
+    }
+  ),
   isVegan: z.boolean(),
   isAvailable: z.boolean(),
   imageUrl: z.string().optional(),
@@ -74,6 +82,7 @@ export default function AddNewItemModal({ categoryId, onAddItem }: AddNewItemMod
       const newItemData: Item = {
         ...values,
         id: Date.now().toString(),
+        price: parseFloat(values.price).toFixed(2), // Ensure two decimal places
         imageUrl: newImageUrl || "https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg",
         categoryId: categoryId,
       }
@@ -95,12 +104,12 @@ export default function AddNewItemModal({ categoryId, onAddItem }: AddNewItemMod
           description: 'Novo item adicionado com sucesso.',
         })
       } else {
-        throw new Error("Failed to create new item.")
+        throw new Error("Falha ao criar novo item. Por favor, tente novamente.")
       }
     } catch (error) {
       toast({
         title: 'Erro',
-        description: 'Ocorreu um erro ao adicionar o novo item.',
+        description: 'Ocorreu um erro ao adicionar o novo item: ' + error,
         variant: 'destructive',
       })
       console.error('Erro ao adicionar novo item:', error)
@@ -159,7 +168,20 @@ export default function AddNewItemModal({ categoryId, onAddItem }: AddNewItemMod
                     <FormItem>
                       <FormLabel>Preço</FormLabel>
                       <FormControl>
-                        <Input placeholder="Digite o preço" {...field} />
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="Digite o preço"
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+                            const parts = value.split('.');
+                            if (parts.length > 1) {
+                              parts[1] = parts[1].slice(0, 2);
+                            }
+                            field.onChange(parts.join('.'));
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

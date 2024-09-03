@@ -253,3 +253,44 @@ export const getRestaurantColorThemeByIdUser = async (idUser: string) => {
     };
   }
 };
+
+export const updateRestaurantColorTheme = async (idUser: string, newColor: string) => {
+  try {
+    // Buscar o primeiro restaurante associado ao idUser
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        userId: idUser,
+      },
+    });
+
+    // Verificar se o restaurante foi encontrado
+    if (!restaurant) {
+      return {
+        error: `Nenhum restaurante encontrado para o usuário com o ID: ${idUser}.`,
+        data: null,
+      };
+    }
+
+    // Atualizar o tema de cor do restaurante
+    const updatedRestaurant = await prisma.restaurant.update({
+      where: {
+        id: restaurant.id,
+      },
+      data: {
+        colorThemeCode: newColor, // Atualizar o campo colorThemeCode com a nova cor
+      },
+    });
+
+    return {
+      error: null, // Nenhum erro ocorreu
+      data: updatedRestaurant.colorThemeCode, // Retornar o novo tema de cor do restaurante atualizado
+    };
+  } catch (error) {
+    console.error('Erro ao atualizar o tema de cor do restaurante:', error);
+
+    return {
+      error: 'Falha ao atualizar o tema de cor do restaurante',
+      data: null,
+    };
+  }
+};

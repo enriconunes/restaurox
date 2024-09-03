@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { updateRestaurantColorTheme } from '../(main)/actions';
+import { toast } from '@/components/ui/use-toast';
 
 const tailwindColors = [
   { name: 'gray', shades: { 400: '#9ca3af', 700: '#374151', 950: '#030712' }},
@@ -22,9 +24,10 @@ const tailwindColors = [
 // Adiciona a prop 'data' ao componente
 interface TailwindColorSelectorFormProps {
   data: string | null; // Defina como null caso o tema de cor não exista
+  idUser: string;
 }
 
-export default function TailwindColorSelectorForm({ data }: TailwindColorSelectorFormProps) {
+export default function TailwindColorSelectorForm({ data, idUser }: TailwindColorSelectorFormProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(data);
 
   // Adiciona um efeito para atualizar o estado inicial quando a 'data' mudar
@@ -34,14 +37,39 @@ export default function TailwindColorSelectorForm({ data }: TailwindColorSelecto
     }
   }, [data]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Selected color:', selectedColor);
-    // Aqui você normalmente enviaria a cor selecionada para o backend
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  console.log('Selected color:', selectedColor);
+
+  if (!selectedColor) return;
+
+  try {
+
+    // Chamar a função para atualizar o tema de cor do restaurante
+    const response = await updateRestaurantColorTheme(idUser, selectedColor);
+
+    if (response.error) {
+      console.error('Erro ao atualizar tema de cor:', response.error);
+      toast({
+        title: 'Erro',
+        description: 'Houve um erro ao atualizar o tema do cardápio. Por favor, tente novamente.',
+      });
+    } else {
+      console.log('Tema de cor atualizado com sucesso:', response.data);
+      toast({
+        title: 'Sucesso',
+        description: 'Tema do cardápio atualizado com sucesso.',
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao enviar o formulário:', error);
+    // Exibir um feedback de erro para o usuário
+  }
+};
+
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Alterar Tema do Cardápio</CardTitle>
       </CardHeader>
@@ -49,7 +77,7 @@ export default function TailwindColorSelectorForm({ data }: TailwindColorSelecto
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="text-sm block mb-2">Escolha uma cor primária.</Label>
-            <p className='text-xs leading-2'>*Essa cor será usada para personalizar os elementos do seu cardápio, como o <span className='font-bold'>banner</span> por trás da logomarca e os <span className='font-bold'>botões de interação</span>.</p>
+            <p className='text-sm leading-2'>*Essa cor será usada para personalizar os elementos do seu cardápio, como o <span className='font-bold'>banner</span> por trás da logomarca e os <span className='font-bold'>botões de interação</span>.</p>
             <div className="grid grid-cols-9 gap-1 mt-4">
               {tailwindColors.map((colorFamily) =>
                 Object.entries(colorFamily.shades).map(([shade, hex]) => (

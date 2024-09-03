@@ -39,14 +39,14 @@ export function ThemeForm() {
     theme.setTheme(data.theme as 'light' | 'dark')
 
     toast({
-      title: 'Success',
-      description: 'Your profile has been updated successfully.',
+      title: 'Successo',
+      description: 'Seu perfil foi atualizado com sucesso.',
     })
   })
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-8">
+      <form onSubmit={onSubmit} className="space-y-8 max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Tema</CardTitle>

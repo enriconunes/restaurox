@@ -42,3 +42,10 @@ export const updateItemSchema = z.object({
   imageUrl: z.string().optional(),
   categoryId: z.string(),
 });
+
+export const upsertDiscountSchema = z.object({
+  discountId: z.string().optional(), // ID do desconto (opcional, usado para atualização)
+  itemId: z.string(), // ID do item é obrigatório
+  newPrice: z.string(), // Novo preço é obrigatório para criar ou atualizar um desconto
+  expiration: z.string().optional().nullable(), // Data de expiração do desconto (opcional e pode ser nulo)
+});

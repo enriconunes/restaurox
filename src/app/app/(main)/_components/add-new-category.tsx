@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Plus, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +20,6 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const categories = data?.itemCategories || [];
   const restaurantId = data?.id;
-  const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(upsertCategorySchema),
@@ -40,8 +38,6 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
       });
       setIsFormVisible(false);
       form.reset();
-      // Força uma atualização da página
-      router.refresh();
     } catch (error) {
       toast({
         title: 'Erro',
@@ -49,10 +45,6 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
       });
     }
   });
-
-  const toggleForm = () => {
-    setIsFormVisible(!isFormVisible);
-  };
 
   if (categories.length === 0) {
     return (
@@ -64,7 +56,7 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
             <p className="text-muted-foreground mb-4">
               Comece adicionando uma nova categoria de alimentos para cadastrar os primeiros itens do seu cardápio.
             </p>
-            <Button onClick={toggleForm} className="bg-red-700 hover:bg-red-800 text-white">
+            <Button onClick={() => setIsFormVisible(!isFormVisible)} className="bg-red-700 hover:bg-red-800 text-white">
               <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> Adicionar nova categoria
             </Button>
             {isFormVisible && (
@@ -92,7 +84,7 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
       <Card className="bg-background text-foreground">
         <CardContent className="p-0">
           <Button
-            onClick={toggleForm}
+            onClick={() => setIsFormVisible(!isFormVisible)}
             variant="ghost"
             className="w-full justify-between p-4 rounded-t-lg hover:bg-muted"
           >

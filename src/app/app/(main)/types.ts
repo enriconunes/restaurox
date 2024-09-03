@@ -12,6 +12,15 @@ export type Todo = {
 
 // File: app/types.ts (or wherever you keep your type definitions)
 
+export interface Discount {
+  id: string;
+  itemId: string;
+  newPrice: string;
+  expiration: string | null;
+  cretedAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -21,6 +30,9 @@ export interface Item {
   isVegan: boolean;
   isAvailable: boolean;
   categoryId: string;
+  discount?: Discount | null;
+  cretedAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ItemCategory {

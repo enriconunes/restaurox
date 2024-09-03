@@ -7,7 +7,7 @@ export const config = {
       free: {
         priceId: 'price_1Pr7gbC7Vhx572wKVywwkmDD',
         quota: {
-          TASKS: 5,
+          TASKS: 30,
         },
       },
       pro: {

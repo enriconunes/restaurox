@@ -101,7 +101,7 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Editar informações do restaurante</CardTitle>

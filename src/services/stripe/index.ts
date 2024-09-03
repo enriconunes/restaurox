@@ -221,17 +221,20 @@ export const getUserCurrentPlan = async (userId: string) => {
 
   console.log(plan)
 
-  // contar quantas tasks o user logado tem na db
-  const tasksCount = await prisma.todo.count({
-    where: {
-      userId,
+  // contar quantos itens o user logado tem na db
+  const itemsCount = await prisma.item.count({
+  where: {
+    category: {
+      restaurant: {
+        userId: userId,
+      },
     },
-  })
-
+  },
+});
   // identificar quantas tasks tem disponiveis no plano a partir do arq de configuracao
-  const availableTasks = plan.quota.TASKS
-  const currentTasks = tasksCount
-  const usage = (currentTasks / availableTasks) * 100 //calcular percentual usado
+  const availableTasks = plan.quota.TASKS //maximo de itens disponibilizados pelo plano
+  const currentItems = itemsCount
+  const usage = (currentItems / availableTasks) * 100 //calcular percentual usado
 
   // retornar todas essas informacoes
   return {
@@ -239,7 +242,7 @@ export const getUserCurrentPlan = async (userId: string) => {
     quota: {
       TASKS: {
         available: availableTasks,
-        current: currentTasks,
+        current: currentItems,
         usage,
       },
     },

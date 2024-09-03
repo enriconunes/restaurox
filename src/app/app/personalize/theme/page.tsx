@@ -8,9 +8,7 @@ export default async function Page(){
     const session = await auth() // Obtém a sessão de autenticação
     const { error, data } = await getRestaurantColorThemeByIdUser(session?.user.id as string); //contem apenas uma string do tipo '#b91c1c', por ex.
 
-    console.log(data)
-
     return(
-        <TailwindColorSelectorForm data={data}/>
+        <TailwindColorSelectorForm data={data} idUser={session?.user.id as string}/>
     )
 }

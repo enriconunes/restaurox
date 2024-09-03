@@ -125,20 +125,35 @@ model ItemCategory {
 }
 
 model Item {
-  id           String   @id @default(cuid())
-  name         String
-  description  String
-  price        String
-  imageUrl     String   @default("https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg")
-  isAvailable  Boolean  @default(true)
-  isVegan      Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  categoryId   String
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  price       String
+  imageUrl    String    @default("https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg")
+  isAvailable Boolean   @default(true)
+  isVegan     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  categoryId  String
 
-  category ItemCategory @relation(fields: [categoryId], references: [id])
-  orderItems OrderItem[]
+  category    ItemCategory @relation(fields: [categoryId], references: [id])
+  orderItems  OrderItem[]
+
+  discount    Discount?    @relation("ItemDiscount") // One-to-one relationship with Discount
+
 }
+
+model Discount {
+  id         String   @id @default(cuid())
+  itemId     String   @unique
+  newPrice   String
+  expiration DateTime @default("9999-12-31T23:59:59.999Z") // Default to a far future date to indicate no expiration
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  item       Item     @relation(fields: [itemId], references: [id], name: "ItemDiscount") // Foreign key relationship to Item
+}
+
 
 model OrderItem {
   id        String   @id @default(cuid())
