@@ -22,6 +22,7 @@ import { InputUploadThingItem } from './input-upload-thing-item'
 import { useUploadThing } from '@/utils/uploadthing'
 import { toast } from '@/components/ui/use-toast'
 import { Item } from '../types'
+import { compressImage } from '@/utils/imageCompression'
 
 import { createNewItem } from '../actions'
 
@@ -66,12 +67,13 @@ export default function AddNewItemModal({ categoryId, onAddItem }: AddNewItemMod
     },
   })
 
-  const handleSubmit = async (values: NewItemFormValues) => {
+const handleSubmit = async (values: NewItemFormValues) => {
     try {
       let newImageUrl = values.imageUrl
 
       if (selectedFile) {
-        const uploadResult = await startUpload([selectedFile])
+        const compressedFile = await compressImage(selectedFile)
+        const uploadResult = await startUpload([compressedFile])
         if (uploadResult && uploadResult[0]) {
           newImageUrl = uploadResult[0].url
         } else {

@@ -22,7 +22,7 @@ export default async function Component() {
   const proBenefits = [
     "Até 100 itens no cardápio;",
     "Personalização das cores do cardápio;",
-    "Adicionar promoção aos seus itens;",
+    "Adicionar desconto aos seus itens;",
     "URL do cardápio personalizada."
   ]
 

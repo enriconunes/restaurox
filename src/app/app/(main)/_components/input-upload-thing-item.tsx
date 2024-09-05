@@ -5,6 +5,8 @@ import { Camera, X, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
+import { toast } from '@/components/ui/use-toast'
+import { compressImage } from '@/utils/imageCompression'
 
 interface InputUploadThingItemProps {
   currentImageUrl: string
@@ -15,20 +17,33 @@ export function InputUploadThingItem({ currentImageUrl, onImageSelect }: InputUp
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert("A imagem deve ter no máximo 2MB")
+        toast({
+          title: 'Erro',
+          description: 'A imagem deve ter o tamanho máximo de 2MB.',
+        })
         return
       }
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const newPreviewUrl = reader.result as string
-        setPreviewUrl(newPreviewUrl)
+      
+      try {
+        const compressedFile = await compressImage(file)
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const newPreviewUrl = reader.result as string
+          setPreviewUrl(newPreviewUrl)
+        }
+        reader.readAsDataURL(compressedFile)
+        onImageSelect(compressedFile)
+      } catch (error) {
+        console.error('Error compressing image:', error)
+        toast({
+          title: 'Erro',
+          description: 'Ocorreu um erro ao processar a imagem.',
+        })
       }
-      reader.readAsDataURL(file)
-      onImageSelect(file)
     }
   }
 

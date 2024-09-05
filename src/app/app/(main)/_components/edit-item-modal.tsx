@@ -32,6 +32,7 @@ import { toast } from '@/components/ui/use-toast'
 import { Item } from '../types'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { DiscountForm } from './discount-form'
+import { compressImage } from '@/utils/imageCompression'
 
 const editItemSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -77,13 +78,37 @@ export function EditItemButton({ item, onSave, onDelete }: EditItemButtonProps) 
     },
   })
 
+  const deleteOldImage = async (fileUrl: string) => {
+    const fileKey = fileUrl.split('/').pop();
+    if (!fileKey) return;
+
+    try {
+      const response = await fetch('/api/uploadthing/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileKey }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        console.error('Failed to delete old image:', result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting old image:', error);
+    }
+  };
+
   const handleSubmit = async (values: EditItemFormValues) => {
     try {
       let updatedItem = { ...item, ...values }
 
       if (selectedFile) {
-        const uploadResult = await startUpload([selectedFile])
+        const compressedFile = await compressImage(selectedFile)
+        const uploadResult = await startUpload([compressedFile])
         if (uploadResult && uploadResult[0]) {
+          // Delete the old image if it exists and is different from the new one
+          if (item.imageUrl && item.imageUrl !== uploadResult[0].url) {
+            await deleteOldImage(item.imageUrl);
+          }
           updatedItem.imageUrl = uploadResult[0].url
         } else {
           throw new Error("Failed to upload image")
@@ -108,6 +133,9 @@ export function EditItemButton({ item, onSave, onDelete }: EditItemButtonProps) 
 
   const handleDelete = async () => {
     try {
+      if (item.imageUrl) {
+        await deleteOldImage(item.imageUrl);
+      }
       await onDelete(item.id)
       setIsDeleteDialogOpen(false)
       toast({

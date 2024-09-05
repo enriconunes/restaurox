@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { Pencil, Trash2, Check, ChevronDown, ChevronUp, Leaf, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { EditItemButton } from './edit-item-modal'
 import { useRouter } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
 
 interface CategoriesWithItemsProps {
   data: RestaurantData | null
@@ -35,6 +36,25 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
   const router = useRouter()
+
+  const deleteOldImage = async (fileUrl: string) => {
+    const fileKey = fileUrl.split('/').pop();
+    if (!fileKey) return;
+
+    try {
+      const response = await fetch('/api/uploadthing/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileKey }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        console.error('Failed to delete old image:', result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting old image:', error);
+    }
+  };
 
   const handleEdit = (categoryId: string) => {
     setCategories(categories.map(category => 
@@ -132,26 +152,39 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
 
   const handleDeleteItem = async (categoryId: string, itemId: string) => {
     try {
-      await deleteItemById(itemId)
+      // Find the item to be deleted
+      const categoryToUpdate = categories.find(category => category.id === categoryId);
+      const itemToDelete = categoryToUpdate?.items.find(item => item.id === itemId);
+
+      if (itemToDelete && itemToDelete.imageUrl) {
+        // Delete the image from UploadThing
+        await deleteOldImage(itemToDelete.imageUrl);
+      }
+
+      // Delete the item from the database
+      await deleteItemById(itemId);
+
+      // Update the local state
       setCategories(categories.map(category => 
         category.id === categoryId
           ? { ...category, items: category.items.filter(item => item.id !== itemId) }
           : category
-      ))
-      router.refresh()
+      ));
+
+      router.refresh();
       toast({
         title: 'Sucesso',
         description: 'Item excluído com sucesso.',
-      })
+      });
     } catch (error) {
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro ao excluir o item.',
         variant: 'destructive',
-      })
-      console.error('Erro ao excluir o item:', error)
+      });
+      console.error('Erro ao excluir o item:', error);
     }
-  }
+  };
 
   const toggleCategoryExpansion = (categoryId: string) => {
     setCategories(categories.map(category =>
@@ -218,7 +251,21 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
                     />
                   </div>
                   <div className="flex-grow">
-                    <h3 className="font-semibold">{item.name}</h3>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-semibold">{item.name}</h3>
+                      {item.isVegan && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          <Leaf className="h-3 w-3 mr-1" />
+                          Vegano
+                        </Badge>
+                      )}
+                      {!item.isAvailable && (
+                        <Badge variant="secondary" className="bg-red-100 text-red-800">
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Indisponível
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
                     <div className="flex items-center space-x-2">
                       {item.discount && isDiscountValid(item.discount) ? (

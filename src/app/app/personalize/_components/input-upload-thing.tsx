@@ -5,6 +5,7 @@ import { Camera, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
+import { toast } from '@/components/ui/use-toast'
 
 interface InputUploadThingProps {
   currentImageUrl: string
@@ -19,7 +20,11 @@ export default function InputUploadThing({ currentImageUrl, onImageSelect }: Inp
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert("A imagem deve ter no máximo 2MB")
+        // alert("A imagem deve ter no máximo 2MB")
+        toast({
+          title: 'Erro',
+          description: 'A imagem deve ter o tamanho máximo de 2MB.',
+        })
         return
       }
       const reader = new FileReader()
