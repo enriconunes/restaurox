@@ -21,16 +21,14 @@ const tailwindColors = [
   { name: 'pink', shades: { 400: '#f472b6', 700: '#be185d', 950: '#500724' }},
 ];
 
-// Adiciona a prop 'data' ao componente
 interface TailwindColorSelectorFormProps {
-  data: string | null; // Defina como null caso o tema de cor não exista
+  data: string | null;
   idUser: string;
 }
 
 export default function TailwindColorSelectorForm({ data, idUser }: TailwindColorSelectorFormProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(data);
 
-  // Adiciona um efeito para atualizar o estado inicial quando a 'data' mudar
   useEffect(() => {
     if (data) {
       setSelectedColor(data);
@@ -38,47 +36,43 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
   }, [data]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  console.log('Selected color:', selectedColor);
+    e.preventDefault();
+    if (!selectedColor) return;
 
-  if (!selectedColor) return;
+    try {
+      const response = await updateRestaurantColorTheme(idUser, selectedColor);
 
-  try {
-
-    // Chamar a função para atualizar o tema de cor do restaurante
-    const response = await updateRestaurantColorTheme(idUser, selectedColor);
-
-    if (response.error) {
-      console.error('Erro ao atualizar tema de cor:', response.error);
-      toast({
-        title: 'Erro',
-        description: 'Houve um erro ao atualizar o tema do cardápio. Por favor, tente novamente.',
-      });
-    } else {
-      console.log('Tema de cor atualizado com sucesso:', response.data);
-      toast({
-        title: 'Sucesso',
-        description: 'Tema do cardápio atualizado com sucesso.',
-      });
+      if (response.error) {
+        console.error('Erro ao atualizar tema de cor:', response.error);
+        toast({
+          title: 'Erro',
+          description: 'Houve um erro ao atualizar o tema do cardápio. Por favor, tente novamente.',
+        });
+      } else {
+        console.log('Tema de cor atualizado com sucesso:', response.data);
+        toast({
+          title: 'Sucesso',
+          description: 'Tema do cardápio atualizado com sucesso.',
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao enviar o formulário:', error);
     }
-  } catch (error) {
-    console.error('Erro ao enviar o formulário:', error);
-    // Exibir um feedback de erro para o usuário
-  }
-};
-
+  };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Alterar Tema do Cardápio</CardTitle>
+    <Card className="w-full max-w-xl mx-auto">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg sm:text-xl">Alterar Tema do Cardápio</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label className="text-sm block mb-2">Escolha uma cor primária.</Label>
-            <p className='text-sm leading-2'>*Essa cor será usada para personalizar os elementos do seu cardápio, como o <span className='font-bold'>banner</span> por trás da logomarca e os <span className='font-bold'>botões de interação</span>.</p>
-            <div className="grid grid-cols-9 gap-1 mt-4">
+            <Label className="text-sm font-medium mb-1 block">Escolha uma cor primária</Label>
+            <p className='text-xs text-gray-600 mb-3'>
+              Essa cor será usada para personalizar os elementos do seu cardápio, como o <span className='font-medium'>banner</span> e os <span className='font-medium'>botões de interação</span>.
+            </p>
+            <div className="grid grid-cols-5 sm:grid-cols-9 gap-2">
               {tailwindColors.map((colorFamily) =>
                 Object.entries(colorFamily.shades).map(([shade, hex]) => (
                   <TooltipProvider key={`${colorFamily.name}-${shade}`}>
@@ -86,7 +80,7 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          className={`w-full aspect-square rounded-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50 ${
+                          className={`w-full aspect-square rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50 ${
                             selectedColor === hex ? 'ring-2 ring-offset-2 ring-opacity-50 scale-110' : ''
                           }`}
                           style={{ backgroundColor: hex }}
@@ -94,9 +88,9 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
                           aria-label={`Select color ${colorFamily.name} ${shade}`}
                         />
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{colorFamily.name} {shade}</p>
-                        <p>{hex}</p>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">{colorFamily.name} {shade}</p>
+                        <p className="text-xs font-mono">{hex}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -105,13 +99,13 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
             </div>
           </div>
           {selectedColor && (
-            <div className="flex items-center space-x-2">
-              <Label className="text-sm font-medium">Cor selecionada:</Label>
+            <div className="flex items-center space-x-2 text-sm">
+              <Label className="font-medium">Cor selecionada:</Label>
               <div 
-                className="w-4 h-4 rounded-full border border-gray-300"
+                className="w-5 h-5 rounded-full border border-gray-300"
                 style={{ backgroundColor: selectedColor }}
               ></div>
-              <span className="text-sm font-bold">{selectedColor}</span>
+              <span className="font-mono">{selectedColor}</span>
             </div>
           )}
           <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 text-white" disabled={!selectedColor}>

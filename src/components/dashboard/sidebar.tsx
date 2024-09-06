@@ -1,40 +1,64 @@
+'use client'
+
+import React, { useState } from 'react'
 import Link from 'next/link'
-
 import { cn } from '@/lib/utils'
-
-// tipo generico usado em todos os componentes que montam a sidebar
-// todos os componentes devem receber um children que será o seu conteudo
-// alem do children, recebe a propriedade className que é opcional
-// essa propriedade permite estilizar cada componente individualmente na sua chamada
-// caso tenha dois DashboardSidebarHeaderTitle, é possivel aplicar classes diferentes para cada um, alem das classes definidas por padrao aqui
-
-// 'cn' do trecho 'className={cn(['', className])}' de cada componente é uma funcao do shadcn
-// permite que una as classes passadas no primeiro parametro ('') com as classes passadas como parametro na chamada do componente do componente.
-// o primeiro parametro fica fixo para todas as chamadas, enquanto o segundo é individual para cada um 
+import { Menu, X } from 'lucide-react'
+import Logo from '../logo'
 
 export type DashboardSidebarGenericProps<T = unknown> = {
   children: React.ReactNode
   className?: string
 } & T
 
-// componente que engloba todos os outros
 export function DashboardSidebar({
   className,
   children,
-}: DashboardSidebarGenericProps) {
+  isOpen,
+  setIsOpen,
+}: DashboardSidebarGenericProps & {
+  isOpen: boolean
+  setIsOpen: (isOpen: boolean) => void
+}) {
   return (
-    <aside
-      className={cn([
-        'border-r border-border flex flex-col space-y-6 bg-secondary/5',
-        className,
-      ])}
-    >
-      {children}
-    </aside>
+    <>
+      {/* Mobile Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-background z-50 flex items-center justify-between px-4 border-b border-border">
+        {/* <h2 className="text-lg font-semibold">Dashboard</h2> */}
+        <div className='w-2/6'>
+          <Logo />
+        </div>
+        <button onClick={() => setIsOpen(!isOpen)} className="p-2">
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </header>
+
+      {/* Sidebar / Mobile Menu */}
+      <aside
+        className={cn([
+          'fixed top-0 left-0 bottom-0 z-40 flex flex-col space-y-6 bg-background transition-transform duration-300 ease-in-out',
+          'lg:translate-x-0 lg:w-64 lg:border-r lg:border-border',
+          'lg:relative lg:flex', // Make it relative and always flex on large screens
+          isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64',
+          'lg:pt-0 pt-16', // Add padding top on mobile to account for the header
+          className,
+        ])}
+      >
+        {children}
+      </aside>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </>
   )
 }
 
-// header do sidebar
+// O restante dos componentes permanece praticamente inalterado
 export function DashboardSidebarHeader({
   className,
   children,
@@ -64,7 +88,7 @@ export function DashboardSidebarMain({
   className,
   children,
 }: DashboardSidebarGenericProps) {
-  return <main className={cn(['px-3', className])}>{children}</main>
+  return <main className={cn(['px-3 flex-grow', className])}>{children}</main>
 }
 
 // navegacoes (links)
@@ -72,7 +96,7 @@ export function DashboardSidebarNav({
   className,
   children,
 }: DashboardSidebarGenericProps) {
-  return <nav className={cn(['', className])}>{children}</nav>
+  return <nav className={cn(['flex flex-col', className])}>{children}</nav>
 }
 
 // header da div dos links
@@ -113,6 +137,7 @@ export function DashboardSidebarNavMain({
 type DashboardSidebarNavLinkProps = {
   href: string
   active?: boolean
+  onClick?: () => void
 }
 
 // links individuais da nav
@@ -122,6 +147,7 @@ export function DashboardSidebarNavLink({
   children,
   href,
   active,
+  onClick,
 }: DashboardSidebarGenericProps<DashboardSidebarNavLinkProps>) {
   return (
     <Link
@@ -131,13 +157,13 @@ export function DashboardSidebarNavLink({
         active && 'bg-secondary',
         className,
       ])}
+      onClick={onClick}
     >
       {children}
     </Link>
   )
 }
 
-// footer do sidebar
 export function DashboardSidebarFooter({
   className,
   children,

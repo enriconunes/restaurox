@@ -13,7 +13,6 @@ import { getUserRestaurantDetails, getUserTodos } from './actions'
 import RestaurantMainDetails from './_components/restaurant-main-datails'
 import AddNewCategory from './_components/add-new-category'
 import CategoriesWithItems from './_components/categories-with-items'
-import QRCodeComponent from './_components/qr-code'
 import { auth } from '@/services/auth' // Importa o serviço de autenticação
 
 export default async function Page() {
@@ -27,7 +26,7 @@ export default async function Page() {
     <DashboardPage className='max-h-screen overflow-y-scroll'>
       <DashboardPageHeader className=''>
         <DashboardPageHeaderTitle>Seu restaurante</DashboardPageHeaderTitle>
-        <DashboardPageHeaderNav>
+        {/* <DashboardPageHeaderNav>
           <DashboardPageHeaderNav>
             <TodoUpsertSheet>
               <Button variant="outline" size="sm">
@@ -36,7 +35,7 @@ export default async function Page() {
               </Button>
             </TodoUpsertSheet>
           </DashboardPageHeaderNav>
-        </DashboardPageHeaderNav>
+        </DashboardPageHeaderNav> */}
       </DashboardPageHeader>
       <DashboardPageMain>
         {/* <TodoDataTable data={todos} /> */}
@@ -44,7 +43,6 @@ export default async function Page() {
         <h3 className='mx-auto text-center text-lg font-medium mt-3'>Detalhes do seu cardápio</h3>
         <AddNewCategory data={data}/>
         <CategoriesWithItems data={data}/>
-        <QRCodeComponent idUser='123' restaurantName='lenha na brasa'/>
       </DashboardPageMain>
     </DashboardPage>
   )

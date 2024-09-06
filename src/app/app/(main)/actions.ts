@@ -3,6 +3,7 @@
 import { auth } from '@/services/auth' // Importa o serviço de autenticação
 import { prisma } from '@/services/database' // Importa o serviço de banco de dados Prisma
 import { z } from 'zod' // Importa o Zod para validação de schemas
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { deleteTodoSchema, upsertTodoSchema, upsertCategorySchema, createNewItemSchema, updateItemSchema, upsertDiscountSchema } from './schema' // Importa os schemas de validação
 import { getUserCurrentPlan } from '@/services/stripe'
 
@@ -273,13 +274,15 @@ export async function deleteCategory(id: string) {
     };
   }
 
-  // Verifica se a categoria existe
+  // Verifica se a categoria existe e se há itens associados
   const category = await prisma.itemCategory.findUnique({
     where: {
       id: id,
     },
-    select: {
-      id: true, // Seleciona apenas o ID da categoria
+    include: {
+      items: {
+        select: { id: true },
+      },
     },
   });
 
@@ -287,6 +290,14 @@ export async function deleteCategory(id: string) {
   if (!category) {
     return {
       error: 'Not found',
+      data: null,
+    };
+  }
+
+  // Verifica se existem itens associados à categoria
+  if (category.items.length > 0) {
+    return {
+      error: 'Remova todos os itens da categoria antes de deletá-la',
       data: null,
     };
   }
@@ -370,7 +381,6 @@ export async function createNewItem(input: z.infer<typeof createNewItemSchema>) 
   };
 }
 
-
 // Function to update an existing item
 export async function updateItem(input: z.infer<typeof updateItemSchema>) {
   const session = await auth(); // Get the authentication session
@@ -450,53 +460,41 @@ export async function updateItem(input: z.infer<typeof updateItemSchema>) {
 }
 
 export async function deleteItemById(itemId: string) {
-  const session = await auth(); // Get the authentication session
+  const session = await auth();
 
-  // Check if the user is authenticated
   if (!session?.user?.id) {
-    return {
-      error: 'Not authorized', // Return an error if not authenticated
-      data: null,
-    };
+    return { error: 'Not authorized', data: null };
   }
 
-  // Check if the item ID was provided
   if (!itemId) {
-    return {
-      error: 'Item ID is required', // Item ID is required to delete an item
-      data: null,
-    };
+    return { error: 'Item ID is required', data: null };
   }
 
-  // Check if the item exists
-  const existingItem = await prisma.item.findUnique({
-    where: {
-      id: itemId,
-    },
-    select: {
-      id: true, // Select only the ID of the item
-    },
-  });
+  try {
+    await prisma.$transaction(async (prisma) => {
+      // First, try to delete the associated discount
+      await prisma.discount.deleteMany({
+        where: { itemId: itemId },
+      });
 
-  // Return an error if the item is not found
-  if (!existingItem) {
-    return {
-      error: 'Item not found',
-      data: null,
-    };
+      // Then, delete the item
+      await prisma.item.delete({
+        where: { id: itemId },
+      });
+    });
+
+    return { error: null, data: 'Item successfully deleted' };
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P2003') {
+        return { error: 'Cannot delete item: it is referenced by other records', data: null };
+      }
+    }
+    
+    return { error: 'Failed to delete item', data: null };
   }
-
-  // Delete the item
-  await prisma.item.delete({
-    where: {
-      id: itemId,
-    },
-  });
-
-  return {
-    error: null,
-    data: 'Item successfully deleted', // Return a success message
-  };
 }
 
 export async function upsertDiscountToItem(input: z.infer<typeof upsertDiscountSchema>) {

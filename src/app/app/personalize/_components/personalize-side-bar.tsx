@@ -6,6 +6,8 @@ import {
   DashboardSidebarNavMain,
 } from '@/components/dashboard/sidebar'
 import { usePathname } from 'next/navigation'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import Link from 'next/link'
 
 export function PersonalizeSidebar() {
   const pathname = usePathname()
@@ -14,30 +16,43 @@ export function PersonalizeSidebar() {
     return pathname === path
   }
 
+  const links = [
+    { href: '/app/personalize', label: 'Dados do restaurante' },
+    { href: '/app/personalize/time', label: 'Definir horários' },
+    { href: '/app/personalize/theme', label: 'Tema do cardápio' },
+  ]
+
   return (
-    <aside>
-      <DashboardSidebarNav>
-        <DashboardSidebarNavMain>
-          <DashboardSidebarNavLink
-            href="/app/personalize"
-            active={isActive('/app/personalize')}
-          >
-            Dados do restaurante
-          </DashboardSidebarNavLink>
-          <DashboardSidebarNavLink
-            href="/app/personalize/time"
-            active={isActive('/app/personalize/time')}
-          >
-            Definir horários
-          </DashboardSidebarNavLink>
-          <DashboardSidebarNavLink
-            href="/app/personalize/theme"
-            active={isActive('/app/personalize/theme')}
-          >
-            Tema do cardápio
-          </DashboardSidebarNavLink>
-        </DashboardSidebarNavMain>
-      </DashboardSidebarNav>
-    </aside>
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:block">
+        <DashboardSidebarNav>
+          <DashboardSidebarNavMain>
+            {links.map((link) => (
+              <DashboardSidebarNavLink
+                key={link.href}
+                href={link.href}
+                active={isActive(link.href)}
+              >
+                {link.label}
+              </DashboardSidebarNavLink>
+            ))}
+          </DashboardSidebarNavMain>
+        </DashboardSidebarNav>
+      </aside>
+
+      {/* Mobile tabs */}
+      <div className="lg:hidden w-full mb-6">
+        <Tabs defaultValue={pathname} className="w-full">
+          <TabsList className="w-full justify-start overflow-x-auto">
+            {links.map((link) => (
+              <TabsTrigger key={link.href} value={link.href} asChild>
+                <Link href={link.href}>{link.label}</Link>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+    </>
   )
 }

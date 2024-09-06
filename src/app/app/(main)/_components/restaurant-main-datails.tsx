@@ -22,7 +22,7 @@ export default function RestaurantMainDetails({ data }: RestaurantMainDetailsPro
   } = data;
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-4 sm:p-6">
+    <div className="w-full max-w-3xl mx-auto lg:p-6 mb-6 lg:mb-0">
       <div className="bg-background text-foreground rounded-lg shadow-xl overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center p-4 sm:p-6">
           <div className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
@@ -43,7 +43,7 @@ export default function RestaurantMainDetails({ data }: RestaurantMainDetailsPro
           </div>
         </div>
         <div className="bg-muted p-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between text-sm mb-2">
+          <div className="flex flex-col sm:flex-row lg:items-center justify-between text-sm mb-2">
             <div className="flex items-center mb-2 sm:mb-0">
               <Phone className="h-4 w-4 mr-2 text-red-700" />
               <span>{contactNumber}</span>
@@ -53,7 +53,7 @@ export default function RestaurantMainDetails({ data }: RestaurantMainDetailsPro
               <span>{instagramProfileName}</span>
             </div>
           </div>
-          <div className="flex items-center justify-center sm:justify-start text-sm text-muted-foreground">
+          <div className="flex items-center lg:justify-center sm:justify-start text-sm text-muted-foreground">
             <Truck className="h-4 w-4 mr-2 text-red-700" />
             <span>{doDelivery ? 'Delivery disponível' : 'Delivery indisponível'}</span>
           </div>

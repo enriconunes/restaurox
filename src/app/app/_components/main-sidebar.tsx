@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   DashboardSidebar,
   DashboardSidebarHeader,
@@ -12,11 +13,10 @@ import {
   DashboardSidebarFooter,
 } from '@/components/dashboard/sidebar'
 import { usePathname } from 'next/navigation'
-import { HomeIcon, GearIcon, Pencil2Icon  } from '@radix-ui/react-icons'
+import { HomeIcon, GearIcon, Pencil2Icon, DashboardIcon } from '@radix-ui/react-icons'
 import { UserDropdown } from './user-dropdown'
-// import { Logo } from '@/components/logo'
-import { Session } from 'next-auth'
 import Logo from '@/components/logo'
+import { Session } from 'next-auth'
 
 type MainSidebarProps = {
   user: Session['user']
@@ -24,18 +24,20 @@ type MainSidebarProps = {
 
 export function MainSidebar({ user }: MainSidebarProps) {
   const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false)
 
-  // funcao que recebe um caminho (ex. '/app/settings')
-  // e retorna true or false caso esse caminho seja igual a url
-  // usada para fazer a estilização na nav da pagina selecionada
   const isActive = (path: string) => {
     return pathname === path
   }
 
-  // componente que faz a 'montagem' de todos os componentes que compõe a sidebar
+  const handleLinkClick = () => {
+    setIsOpen(false)
+  }
+
   return (
-    <DashboardSidebar>
-      <DashboardSidebarHeader>
+    <DashboardSidebar className='min-h-screen' isOpen={isOpen} setIsOpen={setIsOpen}>
+      {/* hidden esconde em tela menor, e flex exibe em telas >= lg */}
+      <DashboardSidebarHeader className='hidden lg:flex'>
         <div className='w-3/5 mx-auto'>
           <Logo />
         </div>
@@ -43,17 +45,26 @@ export function MainSidebar({ user }: MainSidebarProps) {
       <DashboardSidebarMain className="flex flex-col flex-grow">
         <DashboardSidebarNav>
           <DashboardSidebarNavMain>
-            <DashboardSidebarNavLink href="/app" active={isActive('/app')}>
+            <DashboardSidebarNavLink href="/app" active={isActive('/app')} onClick={handleLinkClick}>
               <HomeIcon className="w-3 h-3 mr-3" />
               Painel principal
             </DashboardSidebarNavLink>
-            <DashboardSidebarNavLink href="/app/personalize" active={isActive('/app/personalize')}>
+            <DashboardSidebarNavLink href="/app/personalize" active={isActive('/app/personalize')} onClick={handleLinkClick}>
               <Pencil2Icon className="w-3 h-3 mr-3" />
               Personalizações
             </DashboardSidebarNavLink>
             <DashboardSidebarNavLink
+              href="/app/qrcode"
+              active={isActive('/app/qrcode')}
+              onClick={handleLinkClick}
+            >
+              <DashboardIcon className="w-3 h-3 mr-3" />
+              QR Code
+            </DashboardSidebarNavLink>
+            <DashboardSidebarNavLink
               href="/app/settings"
               active={isActive('/app/settings')}
+              onClick={handleLinkClick}
             >
               <GearIcon className="w-3 h-3 mr-3" />
               Configurações
@@ -68,10 +79,10 @@ export function MainSidebar({ user }: MainSidebarProps) {
             </DashboardSidebarNavHeaderTitle>
           </DashboardSidebarNavHeader>
           <DashboardSidebarNavMain>
-            <DashboardSidebarNavLink href="/">
+            <DashboardSidebarNavLink href="/" onClick={handleLinkClick}>
               Precisa de ajuda?
             </DashboardSidebarNavLink>
-            <DashboardSidebarNavLink href="/">Site</DashboardSidebarNavLink>
+            <DashboardSidebarNavLink href="/" onClick={handleLinkClick}>Site</DashboardSidebarNavLink>
           </DashboardSidebarNavMain>
         </DashboardSidebarNav>
       </DashboardSidebarMain>

@@ -16,7 +16,7 @@ export interface Discount {
   id: string;
   itemId: string;
   newPrice: string;
-  expiration: string | null;
+  expiration: Date | null;
   cretedAt?: Date;
   updatedAt?: Date;
 }

@@ -139,19 +139,19 @@ model Item {
   category    ItemCategory @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
 
-  discount    Discount?    @relation("ItemDiscount") // One-to-one relationship with Discount
-
+  discount    Discount?    @relation("ItemDiscount")
 }
 
 model Discount {
   id         String   @id @default(cuid())
   itemId     String   @unique
   newPrice   String
-  expiration DateTime @default("9999-12-31T23:59:59.999Z") // Default to a far future date to indicate no expiration
+  expiration DateTime @default("9999-12-31T23:59:59.999Z")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  item       Item     @relation(fields: [itemId], references: [id], name: "ItemDiscount") // Foreign key relationship to Item
+  // deletar desconto associado a um item quando esse item for deletado
+  item       Item     @relation(fields: [itemId], references: [id], name: "ItemDiscount", onDelete: Cascade)
 }
 
 

@@ -45,10 +45,11 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
       });
     }
   });
+  
 
   if (categories.length === 0) {
     return (
-      <div className="w-full max-w-3xl mx-auto p-6">
+      <div className="w-full max-w-3xl mx-auto lg:p-6 mt-4 lg:mt-0">
         <Card className="bg-background text-foreground">
           <CardContent className="p-6 flex flex-col items-center text-center">
             <UtensilsCrossed className="h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />

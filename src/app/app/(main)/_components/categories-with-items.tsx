@@ -94,18 +94,26 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
   const handleDeleteConfirm = async () => {
     if (categoryToDelete) {
       try {
-        await deleteCategory(categoryToDelete)
-        toast({
-          title: 'Sucesso',
-          description: 'A categoria foi deletada com sucesso.',
-        })
-
-        setCategories(categories.filter(category => category.id !== categoryToDelete))
-        router.refresh()
+        const result = await deleteCategory(categoryToDelete)
+        if (result.error) {
+          toast({
+            title: 'Erro',
+            description: result.error,
+            variant: 'destructive',
+          })
+        } else {
+          toast({
+            title: 'Sucesso',
+            description: 'A categoria foi deletada com sucesso.',
+          })
+          setCategories(categories.filter(category => category.id !== categoryToDelete))
+          router.refresh()
+        }
       } catch (error) {
         toast({
           title: 'Erro',
           description: 'Houve um erro ao deletar a categoria. Por favor, tente novamente.',
+          variant: 'destructive',
         })
       }
     }
@@ -162,24 +170,34 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
       }
 
       // Delete the item from the database
-      await deleteItemById(itemId);
+      const result = await deleteItemById(itemId);
 
-      // Update the local state
-      setCategories(categories.map(category => 
-        category.id === categoryId
-          ? { ...category, items: category.items.filter(item => item.id !== itemId) }
-          : category
-      ));
+      if (result.error) {
+        // If there's an error, show an error toast
+        toast({
+          title: 'Erro',
+          description: result.error,
+          variant: 'destructive',
+        });
+      } else {
+        // If deletion was successful, update the local state and show success toast
+        setCategories(categories.map(category => 
+          category.id === categoryId
+            ? { ...category, items: category.items.filter(item => item.id !== itemId) }
+            : category
+        ));
 
-      router.refresh();
-      toast({
-        title: 'Sucesso',
-        description: 'Item excluído com sucesso.',
-      });
+        router.refresh();
+        toast({
+          title: 'Sucesso',
+          description: 'Item excluído com sucesso.',
+        });
+      }
     } catch (error) {
+      // Handle any unexpected errors
       toast({
         title: 'Erro',
-        description: 'Ocorreu um erro ao excluir o item.',
+        description: 'Ocorreu um erro inesperado ao excluir o item.',
         variant: 'destructive',
       });
       console.error('Erro ao excluir o item:', error);
@@ -201,6 +219,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
     const expirationDate = new Date(discount.expiration);
     return expirationDate > new Date();
   }
+  
 
   return (
     <div className="w-full max-w-3xl mx-auto p-6 space-y-6">
