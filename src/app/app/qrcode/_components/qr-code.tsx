@@ -4,13 +4,14 @@ import React, { useState, useRef } from "react"
 import { QRCode } from 'react-qrcode-logo'
 import Link from "next/link"
 import html2canvas from "html2canvas"
-import { Download, Utensils, Pizza, Coffee, IceCream, Cake } from 'lucide-react'
+import { Download, Utensils, Pizza, Coffee, IceCream, Cake, Copy, Check } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/use-toast"
 
 interface QRCodeParams {
   idRestaurant: string
@@ -39,7 +40,9 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
   const [bgColor, setBgColor] = useState("#FFFFFF")
   const [selectedCta, setSelectedCta] = useState(callToActions[0])
   const [customCta, setCustomCta] = useState("")
+  const [isCopied, setIsCopied] = useState(false)
   const qrCodeRef = useRef<HTMLDivElement>(null)
+  const qrCodeLink = `http://localhost:3000/menu?id=${idRestaurant}`
 
   const downloadCode = () => {
     if (qrCodeRef.current) {
@@ -54,6 +57,17 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
         link.click()
       })
     }
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(qrCodeLink).then(() => {
+      setIsCopied(true)
+      toast({
+        title: "Link copiado!",
+        description: "O link do QR Code foi copiado para a área de transferência.",
+      })
+      setTimeout(() => setIsCopied(false), 2000)
+    })
   }
 
   return (
@@ -136,7 +150,7 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
             </h3>
             <div className="flex justify-center">
               <QRCode
-                value={`/app/menu?id=${idRestaurant}`}
+                value={qrCodeLink}
                 size={200}
                 qrStyle={selectedStyle.qrOptions.qrStyle}
                 eyeRadius={selectedStyle.qrOptions.eyeRadius}
@@ -149,13 +163,31 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
               {selectedCta === "custom" ? customCta : selectedCta}
             </p>
           </div>
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto bg-red-700 hover:bg-red-800 text-white"
-            onClick={downloadCode}
-          >
-            <Download className="mr-2 h-4 w-4" /> Fazer download
-          </Button>
+
+          <div className="w-full max-w-xs sm:max-w-sm mx-auto space-y-2">
+            <div className="flex items-center space-x-2">
+              <Input
+                value={qrCodeLink}
+                readOnly
+                className="flex-grow"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={copyToClipboard}
+                className="flex-shrink-0"
+              >
+                {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full bg-red-700 hover:bg-red-800 text-white"
+              onClick={downloadCode}
+            >
+              <Download className="mr-2 h-4 w-4" /> Fazer download
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

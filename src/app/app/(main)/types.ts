@@ -42,9 +42,19 @@ export interface ItemCategory {
   isEditing?: boolean; // Add this if you're using it in your component
 }
 
+export interface OpeningHours {
+  id: string;
+  dayOfWeek: string;
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
+  restaurantId: string;
+}
+
 export interface RestaurantData {
   id: string;
   name: string;
+  colorThemeCode: string;
   address: string;
   contactNumber: string;
   instagramProfileName: string;
@@ -52,5 +62,6 @@ export interface RestaurantData {
   deliveryFee: string;
   deliveryTimeMinutes: string;
   avatarUrl: string;
+  openingHours: OpeningHours[];
   itemCategories: ItemCategory[];
 }
