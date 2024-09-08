@@ -1,6 +1,8 @@
 import { getRestaurantDetailsById } from '../actions';
 import { notFound } from 'next/navigation';
 import RestaurantHeader from './_components/restaurant-header';
+import MenuListing from './_components/menu-listing';
+import Footer from './_components/footer';
 
 export default async function Page({
   searchParams,
@@ -22,7 +24,8 @@ export default async function Page({
   return (
     <main>
       <RestaurantHeader restaurant={data} />
-      {/* We'll add more components for the menu items in the next steps */}
+      <MenuListing restaurant={data} />
+      <Footer colorThemeCode={data.colorThemeCode}/>
     </main>
   )
 }

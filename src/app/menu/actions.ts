@@ -14,6 +14,9 @@ export const getRestaurantDetailsById = async (idRestaurant: string) => {
         itemCategories: {
           include: {
             items: {
+              where: {
+                deletedAt: null, // Filtrar apenas itens não deletados logicamente
+              },
               include: {
                 discount: true, // Incluir informações de desconto para cada item
               },

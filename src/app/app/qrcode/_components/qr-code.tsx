@@ -71,7 +71,7 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto sm:p-6">
+    <div className="w-full max-w-2xl mx-auto">
       <Card className="bg-background text-foreground">
         <CardHeader>
           <CardTitle className="text-center text-md sm:text-lg md:text-xl">Crie e compartilhe seu QR Code personalizado</CardTitle>

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { updateRestaurantColorTheme } from '../(main)/actions';
 import { toast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
 
 const tailwindColors = [
   { name: 'gray', shades: { 400: '#9ca3af', 700: '#374151', 950: '#030712' }},
@@ -28,10 +29,12 @@ interface TailwindColorSelectorFormProps {
 
 export default function TailwindColorSelectorForm({ data, idUser }: TailwindColorSelectorFormProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(data);
+  const [customColor, setCustomColor] = useState<string>('#000000');
 
   useEffect(() => {
     if (data) {
       setSelectedColor(data);
+      setCustomColor(data);
     }
   }, [data]);
 
@@ -58,6 +61,12 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
     } catch (error) {
       console.error('Erro ao enviar o formulário:', error);
     }
+  };
+
+  const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    setCustomColor(newColor);
+    setSelectedColor(newColor);
   };
 
   return (
@@ -91,11 +100,28 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
                       <TooltipContent side="bottom">
                         <p className="text-xs">{colorFamily.name} {shade}</p>
                         <p className="text-xs font-mono">{hex}</p>
-                      </TooltipContent>
-                    </Tooltip>
+                      </TooltipContent>                    </Tooltip>
                   </TooltipProvider>
                 ))
               )}
+            </div>
+          </div>
+          <div>
+            <Label className="text-sm font-medium mb-1 block">Cor Personalizada</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="color"
+                value={customColor}
+                onChange={handleCustomColorChange}
+                className="w-12 h-12 p-1 rounded-md"
+              />
+              <Input
+                type="text"
+                value={customColor}
+                onChange={handleCustomColorChange}
+                className="flex-grow"
+                placeholder="Digite um valor hexadecimal"
+              />
             </div>
           </div>
           {selectedColor && (

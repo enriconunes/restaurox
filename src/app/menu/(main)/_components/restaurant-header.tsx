@@ -12,8 +12,6 @@ interface RestaurantHeaderProps {
 }
 
 export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
-
-    console.log(restaurant.openingHours)
   return (
     <header className="w-full">
       <div className="relative">
@@ -50,24 +48,22 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
           </div>
         </div>
       </div>
-      <div className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center text-sm justify-center space-x-4">
-            <span className="flex items-center">
-              <Phone className="w-4 h-4 mr-1 text-gray-600" />
-              {restaurant.contactNumber}
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center text-sm sm:justify-center sm:space-x-4 space-y-2 sm:space-y-0">
+          <span className="flex items-center">
+            <Phone className="w-4 h-4 mr-1 text-gray-600" />
+            {restaurant.contactNumber}
+          </span>
+          <Link href={`https://www.instagram.com/${restaurant.instagramProfileName}/`} target='blank' className="flex items-center">
+            <Instagram className="w-4 h-4 mr-1 text-gray-600" />
+            {restaurant.instagramProfileName}
+          </Link>
+          {restaurant.doDelivery && (
+            <span className="flex items-center text-green-600 font-medium">
+              <Truck className="w-4 h-4 mr-1" />
+              Delivery disponível
             </span>
-            <Link href={`https://www.instagram.com/${restaurant.instagramProfileName}/`} target='blank' className="flex items-center">
-              <Instagram className="w-4 h-4 mr-1 text-gray-600" />
-              {restaurant.instagramProfileName}
-            </Link>
-            {restaurant.doDelivery && (
-              <span className="flex items-center text-green-600 font-medium">
-                <Truck className="w-4 h-4 mr-1" />
-                Delivery disponível
-              </span>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </header>

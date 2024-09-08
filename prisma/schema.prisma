@@ -135,6 +135,7 @@ model Item {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   categoryId  String
+  deletedAt   DateTime? // null means the item is not deleted
 
   category    ItemCategory @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]

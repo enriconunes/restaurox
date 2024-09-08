@@ -149,19 +149,21 @@ export const getUserRestaurantDetails = async (idUser: string) => {
         userId: idUser,
       },
       include: {
-        openingHours: true, // Include opening hours
+        openingHours: true, // Inclui horários de funcionamento
         itemCategories: {
           include: {
             items: {
+              where: {
+                deletedAt: null, // Filtra apenas itens que não foram deletados logicamente
+              },
               include: {
-                discount: true, // Include discount information for each item
+                discount: true, // Inclui informações de desconto para cada item
               },
             },
           },
         },
       },
     });
-
 
     if (!restaurant) {
       return {
@@ -472,18 +474,19 @@ export async function deleteItemById(itemId: string) {
 
   try {
     await prisma.$transaction(async (prisma) => {
-      // First, try to delete the associated discount
+      // Primeiro, delete os descontos associados
       await prisma.discount.deleteMany({
         where: { itemId: itemId },
       });
 
-      // Then, delete the item
-      await prisma.item.delete({
+      // Atualize o campo deletedAt para a data e hora atuais
+      await prisma.item.update({
         where: { id: itemId },
+        data: { deletedAt: new Date() }, // Marca o item como "deletado" logicamente
       });
     });
 
-    return { error: null, data: 'Item successfully deleted' };
+    return { error: null, data: 'Item successfully marked as deleted' };
   } catch (error) {
     console.error('Error deleting item:', error);
     
@@ -492,7 +495,7 @@ export async function deleteItemById(itemId: string) {
         return { error: 'Cannot delete item: it is referenced by other records', data: null };
       }
     }
-    
+
     return { error: 'Failed to delete item', data: null };
   }
 }
