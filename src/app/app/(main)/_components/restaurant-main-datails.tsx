@@ -43,20 +43,21 @@ export default function RestaurantMainDetails({ data }: RestaurantMainDetailsPro
           </div>
         </div>
         <div className="bg-muted p-4">
-          <div className="flex flex-col sm:flex-row lg:items-center justify-between text-sm mb-2">
-            <div className="flex items-center mb-2 sm:mb-0">
-              <Phone className="h-4 w-4 mr-2 text-red-700" />
-              <span>{contactNumber}</span>
-            </div>
-            <div className="flex items-center">
-              <Instagram className="h-4 w-4 mr-2 text-red-700" />
-              <span>{instagramProfileName}</span>
-            </div>
+          <div className="flex flex-col sm:flex-row lg:flex-row lg:justify-center lg:space-x-12 text-sm mb-2">
+          <div className="flex items-center mb-2 sm:mb-0">
+            <Phone className="h-4 w-4 mr-2 text-red-700" />
+            <span>{contactNumber}</span>
           </div>
-          <div className="flex items-center lg:justify-center sm:justify-start text-sm text-muted-foreground">
+          <div className="flex items-center mb-2 sm:mb-0">
             <Truck className="h-4 w-4 mr-2 text-red-700" />
-            <span>{doDelivery ? 'Delivery disponível' : 'Delivery indisponível'}</span>
+            <span>Delivery disponível</span>
           </div>
+          <div className="flex items-center">
+            <Instagram className="h-4 w-4 mr-2 text-red-700" />
+            <span>{instagramProfileName}</span>
+          </div>
+        </div>
+
         </div>
       </div>
     </div>

@@ -222,7 +222,7 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
   
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-6 space-y-6">
+    <div className="w-full max-w-3xl mx-auto lg:px-6 py-6 space-y-6">
       {categories.map((category) => (
         <Card key={category.id} className="bg-background text-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -261,52 +261,56 @@ export default function CategoriesWithItems({ data }: CategoriesWithItemsProps) 
             />
             {category.items.slice(0, category.isExpanded ? undefined : 3).map((item) => (
               <Card className='mt-2' key={item.id}>
-                <CardContent className="p-4 flex items-center space-x-4">
-                  <div className="w-16 h-16 flex-shrink-0">
+                <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="w-full sm:w-16 h-32 sm:h-16 flex-shrink-0">
                     <img
                       src={item.imageUrl || "https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg"}
                       alt={item.name}
                       className="w-full h-full object-cover rounded"
                     />
                   </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex-grow space-y-2 sm:space-y-1 w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <h3 className="font-semibold">{item.name}</h3>
-                      {item.isVegan && (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          <Leaf className="h-3 w-3 mr-1" />
-                          Vegano
-                        </Badge>
-                      )}
-                      {!item.isAvailable && (
-                        <Badge variant="secondary" className="bg-red-100 text-red-800">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          Indisponível
-                        </Badge>
-                      )}
+                      <div className="flex flex-wrap gap-1 mt-1 sm:mt-0">
+                        {item.isVegan && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            <Leaf className="h-3 w-3 mr-1" />
+                            Vegano
+                          </Badge>
+                        )}
+                        {!item.isAvailable && (
+                          <Badge variant="secondary" className="bg-red-100 text-red-800">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Indisponível
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
-                    <div className="flex items-center space-x-2">
-                      {item.discount && isDiscountValid(item.discount) ? (
-                        <>
-                          <p className="text-sm line-through text-muted-foreground">{formatPrice(parseFloat(item.price))}</p>
-                          <p className="text-sm font-medium text-red-600">{formatPrice(parseFloat(item.discount.newPrice))}</p>
-                          {item.discount.expiration && new Date(item.discount.expiration).getTime() !== new Date('9999-12-31T23:59:59.999Z').getTime() && (
-                            <p className="text-xs text-muted-foreground">
-                              Válido até {new Date(item.discount.expiration).toLocaleDateString('pt-BR')}
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-sm font-medium">{formatPrice(parseFloat(item.price))}</p>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <div className="space-x-2">
+                        {item.discount && isDiscountValid(item.discount) ? (
+                          <>
+                            <span className="text-sm line-through text-muted-foreground">{formatPrice(parseFloat(item.price))}</span>
+                            <span className="text-sm font-medium text-red-600">{formatPrice(parseFloat(item.discount.newPrice))}</span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-medium">{formatPrice(parseFloat(item.price))}</span>
+                        )}
+                      </div>
+                      <EditItemButton 
+                        item={item}
+                        onSave={(updatedItem: Item) => handleUpdateItem(category.id, updatedItem)} 
+                        onDelete={() => handleDeleteItem(category.id, item.id)} 
+                      />
                     </div>
+                    {item.discount?.expiration && new Date(item.discount.expiration).getTime() !== new Date('9999-12-31T23:59:59.999Z').getTime() && (
+                      <p className="text-xs text-muted-foreground">
+                        Válido até {new Date(item.discount.expiration).toLocaleDateString('pt-BR')}
+                      </p>
+                    )}
                   </div>
-                  <EditItemButton 
-                    item={item}
-                    onSave={(updatedItem: Item) => handleUpdateItem(category.id, updatedItem)} 
-                    onDelete={() => handleDeleteItem(category.id, item.id)} 
-                  />
                 </CardContent>
               </Card>
             ))}

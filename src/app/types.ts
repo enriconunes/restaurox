@@ -6,6 +6,7 @@ export interface RestaurantData {
   contactNumber: string;
   instagramProfileName: string;
   doDelivery: boolean;
+  doOrder: boolean;
   avatarUrl: string;
   coverUrl: string;
   colorThemeCode: string;

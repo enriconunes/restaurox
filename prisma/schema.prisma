@@ -87,10 +87,15 @@ model Order {
   orderType       String
   totalPrice      String
   table           String?
+  trackingCode    String
   clientContact   String?
   clientAddress   String?
   orderItems      OrderItem[]
 }
+// pending (mostrar que aguarda confirmação)
+// canceled (mostrar que o pedido foi cancelado)
+// confirmed (mostrar que o pedido foi confirmado/está em preparação)
+// done (mostrar que o pedido foi enviado).
 
 model Restaurant {
   id                    String          @id @default(cuid())
@@ -99,6 +104,7 @@ model Restaurant {
   contactNumber         String          @default("11999999999")
   instagramProfileName  String          @default("Indefinido")
   doDelivery            Boolean         @default(true)
+  doOrder               Boolean         @default(true)
   deliveryFee           String          @default("5.00")
   deliveryTimeMinutes   String          @default("30")
   avatarUrl             String          @default("https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg")

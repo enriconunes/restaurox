@@ -81,7 +81,7 @@ export default function AddNewCategory({ data }: AddNewCategoryProps) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-6">
+    <div className="w-full max-w-3xl mx-auto lg:px-6 pt-6">
       <Card className="bg-background text-foreground">
         <CardContent className="p-0">
           <Button

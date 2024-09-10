@@ -164,7 +164,7 @@ export const getUserRestaurantDetails = async (idUser: string) => {
         },
       },
     });
-
+    
     if (!restaurant) {
       return {
         error: 'Restaurante não encontrado para este usuário',

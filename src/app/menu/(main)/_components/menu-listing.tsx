@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
-import { RestaurantData } from '@/app/app/(main)/types';
+import { RestaurantData, Item } from '@/app/app/(main)/types';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XCircle, X } from 'lucide-react';
 import { darkenColor } from '../../functions';
+import MenuCart from './menu-cart';
 
 interface MenuListingProps {
   restaurant: RestaurantData;
@@ -14,6 +15,7 @@ interface MenuListingProps {
 export default function MenuListing({ restaurant }: MenuListingProps) {
   const [activeCategory, setActiveCategory] = useState<string>(restaurant.itemCategories[0]?.id);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<{id: string; name: string; price: number; quantity: number}[]>([]);
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
@@ -41,27 +43,41 @@ export default function MenuListing({ restaurant }: MenuListingProps) {
     categoryRefs.current[categoryId]?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const addToCart = (item: Item) => {
+    setCartItems(prevItems => {
+      const price = item.discount ? parseFloat(item.discount.newPrice) : parseFloat(item.price);
+      const existingItem = prevItems.find(cartItem => cartItem.id === item.id);
+      if (existingItem) {
+        return prevItems.map(cartItem =>
+          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+        );
+      } else {
+        return [...prevItems, { id: item.id, name: item.name, price: price, quantity: 1 }];
+      }
+    });
+  };
+
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <nav className="sticky top-3 bg-white bg-opacity-60 z-10 py-2 mb-8">
-            <div className="flex overflow-x-auto space-x-4 scrollbar-hide">
-            {restaurant.itemCategories.map((category) => (
-                <button
-                key={category.id}
-                onClick={() => scrollToCategory(category.id)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-300`}
-                style={{
-                    backgroundColor: activeCategory === category.id ? darkenColor(restaurant.colorThemeCode, 20) : 'white',
-                    color: activeCategory === category.id ? 'white' : darkenColor(restaurant.colorThemeCode, 20),
-                    border: activeCategory === category.id ? 'none' : `1px solid ${darkenColor(restaurant.colorThemeCode, 20)}`,
-                    boxShadow: activeCategory === category.id ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none',
-                }}
-                >
-                {category.name}
-                </button>
-            ))}
-            </div>
-        </nav>
+        <div className="flex overflow-x-auto space-x-4 scrollbar-hide">
+          {restaurant.itemCategories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => scrollToCategory(category.id)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-300`}
+              style={{
+                backgroundColor: activeCategory === category.id ? darkenColor(restaurant.colorThemeCode, 20) : 'white',
+                color: activeCategory === category.id ? 'white' : darkenColor(restaurant.colorThemeCode, 20),
+                border: activeCategory === category.id ? 'none' : `1px solid ${darkenColor(restaurant.colorThemeCode, 20)}`,
+                boxShadow: activeCategory === category.id ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none',
+              }}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {restaurant.itemCategories.map((category) => (
         <motion.div 
@@ -85,14 +101,14 @@ export default function MenuListing({ restaurant }: MenuListingProps) {
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="flex flex-col sm:flex-row">
-                  <div className="w-full sm:w-1/3 relative cursor-pointer" onClick={() => setExpandedImage(item.imageUrl)}>
+                <div className="flex flex-col sm:flex-row cursor-pointer">
+                  <div className="w-full sm:w-1/3 relative h-32">
                     <Image
                       src={item.imageUrl}
                       alt={item.name}
-                      width={150}
-                      height={150}
-                      className="object-cover w-full h-32 sm:h-full"
+                      layout="fill"
+                      objectFit="cover"
+                      onClick={() => setExpandedImage(item.imageUrl)}
                     />
                     {!item.isAvailable && (
                       <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
@@ -125,13 +141,16 @@ export default function MenuListing({ restaurant }: MenuListingProps) {
                             Vegano
                           </span>
                         )}
-                        {item.isAvailable ? (
+                        {item.isAvailable && restaurant.doOrder && (
                           <button
-                          style={{ backgroundColor: darkenColor(restaurant.colorThemeCode, 20) }}
-                          className="text-white px-3 py-1 rounded-full text-xs font-medium hover:brightness-95 transition-colors duration-300">
+                            style={{ backgroundColor: darkenColor(restaurant.colorThemeCode, 20) }}
+                            className="text-white px-3 py-1 rounded-full text-xs font-medium hover:brightness-95 transition-colors duration-300"
+                            onClick={() => addToCart(item)}
+                          >
                             Adicionar
                           </button>
-                        ) : (
+                        )}
+                        {!item.isAvailable && (
                           <span className="text-xs text-red-600 font-medium">
                             Indisponível
                           </span>
@@ -145,6 +164,17 @@ export default function MenuListing({ restaurant }: MenuListingProps) {
           </div>
         </motion.div>
       ))}
+
+      <MenuCart 
+        colorThemeCode={restaurant.colorThemeCode}
+        doOrder={restaurant.doOrder}
+        doDelivery={restaurant.doDelivery}
+        cartItems={cartItems}
+        setCartItems={setCartItems}
+        restaurantId={restaurant.id}
+        deliveryFee={restaurant.deliveryFee}
+        deliveryTimeMinutes={restaurant.deliveryTimeMinutes}
+      />
 
       <AnimatePresence>
         {expandedImage && (
@@ -172,7 +202,7 @@ export default function MenuListing({ restaurant }: MenuListingProps) {
                 alt="Expanded view"
                 width={800}
                 height={600}
-                className="w-full h-auto"
+                layout="responsive"
               />
             </motion.div>
           </motion.div>
