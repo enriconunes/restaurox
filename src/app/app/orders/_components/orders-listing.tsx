@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Label } from '@/components/ui/label'
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, ShoppingBag, Truck, UtensilsCrossed, Calendar, DollarSign, MapPin, Phone, Hash, ClipboardList } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, User, Truck, UtensilsCrossed, Calendar, DollarSign, MapPin, Phone, Hash, ClipboardList, SearchCheck } from 'lucide-react'
 import { Order, OrderItem } from '../../(main)/types'
 import { toast } from '@/components/ui/use-toast'
 
@@ -233,7 +233,7 @@ export default function OrdersListing({ userId }: OrdersListingProps) {
                   <div className="flex flex-col md:flex-row justify-between items-start mb-4">
                     <div className="space-y-2 mb-4 md:mb-0">
                       <p className="flex items-center gap-2">
-                        <ShoppingBag className="w-4 h-4 text-gray-500" />
+                        <User className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-700">{order.clientName || 'N/A'}</span>
                       </p>
                       <p className="flex items-center gap-2">
@@ -287,8 +287,8 @@ export default function OrdersListing({ userId }: OrdersListingProps) {
                           </p>
                         )}
                         <p className="flex items-center gap-2">
-                          <Truck className="w-4 h-4 text-gray-500" />
-                          <span className="text-gray-700">Código de Rastreio: {order.trackingCode}</span>
+                          <SearchCheck className="w-4 h-4 text-gray-500" />
+                          <span className="text-gray-700">Código para Acompanhamento: {order.trackingCode}</span>
                         </p>
                       </div>
                       <Separator className="my-4" />
@@ -320,7 +320,7 @@ export default function OrdersListing({ userId }: OrdersListingProps) {
             >
               <ChevronLeftIcon className="mr-2 h-4 w-4" /> Anterior
             </Button>
-            <span className="text-lg font-semibold text-gray-700">Página {page} de {totalPages}</span>
+            <span className="text-sm px-2 font-semibold text-gray-700">Página {page} de {totalPages}</span>
             <Button
               onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
               disabled={page === totalPages}

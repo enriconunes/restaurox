@@ -70,7 +70,7 @@ export default function TailwindColorSelectorForm({ data, idUser }: TailwindColo
   };
 
   return (
-    <Card className="w-full max-w-xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg sm:text-xl">Alterar Tema do Cardápio</CardTitle>
       </CardHeader>

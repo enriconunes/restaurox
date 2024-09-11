@@ -13,7 +13,7 @@ import {
   DashboardSidebarFooter,
 } from '@/components/dashboard/sidebar'
 import { usePathname } from 'next/navigation'
-import { HomeIcon, GearIcon, Pencil2Icon, DashboardIcon, FileTextIcon } from '@radix-ui/react-icons'
+import { HomeIcon, GearIcon, Pencil2Icon, DashboardIcon, FileTextIcon, BarChartIcon } from '@radix-ui/react-icons'
 import { UserDropdown } from './user-dropdown'
 import Logo from '@/components/logo'
 import { Session } from 'next-auth'
@@ -60,6 +60,14 @@ export function MainSidebar({ user }: MainSidebarProps) {
             >
               <FileTextIcon className="w-3 h-3 mr-3" />
               Pedidos
+            </DashboardSidebarNavLink>
+            <DashboardSidebarNavLink
+              href="/app/metrics"
+              active={isActive('/app/metrics')}
+              onClick={handleLinkClick}
+            >
+              <BarChartIcon className="w-3 h-3 mr-3" />
+              Métricas
             </DashboardSidebarNavLink>
             <DashboardSidebarNavLink
               href="/app/qrcode"
