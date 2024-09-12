@@ -63,95 +63,102 @@ export async function createNewOrder(input: {
     amount: string;
   }[];
 }) {
+  // Inicia uma transação para garantir consistência
+  return await prisma.$transaction(async (prisma) => {
+    // Verifica se o restaurante existe
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: input.restaurantId },
+    });
 
-  // Verifica se o restaurante existe
-  const restaurant = await prisma.restaurant.findUnique({
-    where: { id: input.restaurantId },
-  });
+    if (!restaurant) {
+      throw new Error('Restaurant not found');
+    }
 
-  if (!restaurant) {
-    return {
-      error: 'Restaurant not found',
-      data: null,
-    };
-  }
-
-  // Encontra o maior identifier de pedidos anteriores para o restaurante e define o próximo como autoincremento
-  const lastOrder = await prisma.order.findFirst({
-    where: {
-      orderItems: {
-        some: {
-          item: {
-            category: {
-              restaurantId: input.restaurantId,
+    // Encontra o maior identifier de pedidos anteriores para o restaurante
+    const orders = await prisma.order.findMany({
+      where: {
+        orderItems: {
+          some: {
+            item: {
+              category: {
+                restaurantId: input.restaurantId,
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      identifier: 'desc',
-    },
-    select: {
-      identifier: true,
-    },
-  });
-
-  const nextIdentifier = lastOrder ? Number(lastOrder.identifier) + 1 : 1;
-
-  // Verifica se há itens fornecidos
-  if (input.items.length === 0) {
-    return {
-      error: 'At least one item is required to create an order',
-      data: null,
-    };
-  }
-
-  // Valida se os itens existem
-  for (const orderItem of input.items) {
-    const itemExists = await prisma.item.findUnique({
-      where: { id: orderItem.itemId },
+      select: {
+        identifier: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 100, // Pega os últimos 100 pedidos para garantir
     });
 
-    if (!itemExists) {
-      return {
-        error: `Item with ID ${orderItem.itemId} not found`,
-        data: null,
-      };
+    console.log("Últimos pedidos:", orders);
+
+    // Encontra o maior identificador
+    const lastIdentifier = orders.reduce((max, order) => {
+      const current = parseInt(order.identifier, 10);
+      return current > max ? current : max;
+    }, 0);
+
+    const nextIdentifier = lastIdentifier + 1;
+
+    console.log("Último identificador:", lastIdentifier);
+    console.log("Próximo identificador:", nextIdentifier);
+
+    // Verifica se há itens fornecidos
+    if (input.items.length === 0) {
+      throw new Error('At least one item is required to create an order');
     }
-  }
 
-  const trackingCode = nanoid(6); // Código de rastreio curto e único
+    // Valida se os itens existem
+    for (const orderItem of input.items) {
+      const itemExists = await prisma.item.findUnique({
+        where: { id: orderItem.itemId },
+      });
 
-  // Cria o pedido (Order) no banco de dados
-  const newOrder = await prisma.order.create({
-    data: {
-      identifier: String(nextIdentifier),
-      status: 'pending', // Status inicial do pedido
-      note: input.note || null,
-      clientName: input.clientName || null,
-      orderType: input.orderType,
-      totalPrice: input.totalPrice,
-      table: input.table || null,
-      clientContact: input.clientContact || null,
-      clientAddress: input.clientAddress || null,
-      trackingCode, // Adiciona o código de rastreio ao pedido
-      orderItems: {
-        create: input.items.map((orderItem) => ({
-          amount: orderItem.amount,
-          itemId: orderItem.itemId,
-        })),
+      if (!itemExists) {
+        throw new Error(`Item with ID ${orderItem.itemId} not found`);
+      }
+    }
+
+    const trackingCode = nanoid(6); // Código de rastreio curto e único
+
+    // Cria o pedido (Order) no banco de dados
+    const newOrder = await prisma.order.create({
+      data: {
+        identifier: String(nextIdentifier),
+        status: 'pending', // Status inicial do pedido
+        note: input.note || null,
+        clientName: input.clientName || null,
+        orderType: input.orderType,
+        totalPrice: input.totalPrice,
+        table: input.table || null,
+        clientContact: input.clientContact || null,
+        clientAddress: input.clientAddress || null,
+        trackingCode, // Adiciona o código de rastreio ao pedido
+        orderItems: {
+          create: input.items.map((orderItem) => ({
+            amount: orderItem.amount,
+            itemId: orderItem.itemId,
+          })),
+        },
       },
-    },
-    include: {
-      orderItems: true,
-    },
-  });
+      include: {
+        orderItems: true,
+      },
+    });
 
-  return {
-    error: null,
-    data: newOrder, // Retorna o pedido criado
-  };
+    console.log("Novo pedido criado:", newOrder);
+
+    return {
+      error: null,
+      data: newOrder, // Retorna o pedido criado
+    };
+  });
 }
 
 // rastrear estado da order

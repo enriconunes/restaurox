@@ -253,11 +253,12 @@ const MenuCart: React.FC<MenuCartProps> = ({ colorThemeCode, doOrder, doDelivery
                           </div>
                           <div>
                             <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-1">
-                              Seu Nome (opcional)
+                              Seu Nome *
                             </label>
                             <input
                               type="text"
                               id="customerName"
+                              required
                               value={customerName}
                               onChange={(e) => setCustomerName(e.target.value)}
                               className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
@@ -284,7 +285,7 @@ const MenuCart: React.FC<MenuCartProps> = ({ colorThemeCode, doOrder, doDelivery
                           </div>
                           <div>
                             <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                              Endereço de Entrega *
+                              Endereço de Entrega (completo) *
                             </label>
                             <input
                               type="text"
@@ -297,10 +298,11 @@ const MenuCart: React.FC<MenuCartProps> = ({ colorThemeCode, doOrder, doDelivery
                           </div>
                           <div>
                             <label htmlFor="deliveryCustomerName" className="block text-sm font-medium text-gray-700 mb-1">
-                              Seu Nome (opcional)
+                              Seu Nome *
                             </label>
                             <input
                               type="text"
+                              required
                               id="deliveryCustomerName"
                               value={customerName}
                               onChange={(e) => setCustomerName(e.target.value)}
@@ -343,7 +345,7 @@ const MenuCart: React.FC<MenuCartProps> = ({ colorThemeCode, doOrder, doDelivery
                 </div>
                 <button
                   onClick={handleSubmit}
-                  disabled={cartItems.length === 0 || !orderType || (orderType === 'store' && !tableNumber) || (orderType === 'delivery' && (!phoneNumber || !address))}
+                  disabled={cartItems.length === 0 || !orderType || (orderType === 'store' && !tableNumber) || (orderType === 'delivery' && (!phoneNumber || !address)) || !customerName}
                   className="w-full py-2 px-4 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: buttonColor }}
                 >

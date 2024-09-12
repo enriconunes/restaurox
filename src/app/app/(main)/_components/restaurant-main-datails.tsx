@@ -50,7 +50,11 @@ export default function RestaurantMainDetails({ data }: RestaurantMainDetailsPro
           </div>
           <div className="flex items-center mb-2 sm:mb-0">
             <Truck className="h-4 w-4 mr-2 text-red-700" />
-            <span>Delivery disponível</span>
+            {doDelivery ? (
+              <span>Delivery disponível</span>
+            ):(
+              <span>Delivery indisponível</span>
+            )}
           </div>
           <div className="flex items-center">
             <Instagram className="h-4 w-4 mr-2 text-red-700" />

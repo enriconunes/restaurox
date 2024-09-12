@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getRestaurantMetrics } from '../../orders/actions'
+import { format, parse } from 'date-fns'
+import { getRestaurantMetrics } from '../actions'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { addDays, format } from 'date-fns'
+import { Button } from "@/components/ui/button"
 import OverviewMetrics from './OverViewMetrics'
 import TopSellingItems from './TopSellingItems'
 import RevenueChart from './RevenueChart'
@@ -17,7 +18,7 @@ interface MetricsProps {
   userId: string | undefined
 }
 
-interface MetricsData {
+type MetricsData = {
   totalOrders: number;
   totalRevenue: number;
   averageOrderValue: number;
@@ -32,8 +33,8 @@ interface MetricsData {
 
 export default function Metrics({ userId }: MetricsProps) {
   const [metrics, setMetrics] = useState<MetricsData | null>(null)
-  const [startDate, setStartDate] = useState(format(addDays(new Date(), -30), 'yyyy-MM-dd'))
-  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
   const [orderType, setOrderType] = useState<'delivery' | 'dine-in' | 'all'>('all')
   const [category, setCategory] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
@@ -44,13 +45,13 @@ export default function Metrics({ userId }: MetricsProps) {
       setIsLoading(true)
       const result = await getRestaurantMetrics({
         userId,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
+        startDate: startDate ? parse(startDate, 'yyyy-MM-dd', new Date()) : undefined,
+        endDate: endDate ? parse(endDate, 'yyyy-MM-dd', new Date()) : undefined,
         orderType: orderType === 'all' ? undefined : orderType,
         category: category === 'all' ? undefined : category
       })
       if (result.data) {
-        setMetrics(result.data as MetricsData)
+        setMetrics(result.data)
       }
       setIsLoading(false)
     }
@@ -58,16 +59,22 @@ export default function Metrics({ userId }: MetricsProps) {
     fetchMetrics()
   }, [userId, startDate, endDate, orderType, category])
 
+  const clearDateFilter = () => {
+    setStartDate('')
+    setEndDate('')
+  }
+
   if (!userId) return <div>ID do usuário é obrigatório</div>
   if (isLoading) return <div>Carregando métricas...</div>
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <h1 className="text-xl font-bold">Painel de Métricas do Restaurante</h1>
       
       <div className="flex flex-wrap gap-4">
         <div className="flex gap-2">
           <div>
-            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">Data Inicial</label>
+            <label htmlFor="start-date" className="block text-sm font-medium text-gray-600">Data Inicial</label>
             <input
               type="date"
               id="start-date"
@@ -77,7 +84,7 @@ export default function Metrics({ userId }: MetricsProps) {
             />
           </div>
           <div>
-            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">Data Final</label>
+            <label htmlFor="end-date" className="block text-sm font-medium text-gray-600">Data Final</label>
             <input
               type="date"
               id="end-date"
@@ -86,6 +93,9 @@ export default function Metrics({ userId }: MetricsProps) {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </div>
+        </div>
+        <div className="">
+            <Button onClick={clearDateFilter} variant="outline">Limpar Filtro de Data</Button>
         </div>
         <Select onValueChange={(value) => setOrderType(value as 'delivery' | 'dine-in' | 'all')}>
           <SelectTrigger className="w-[180px]">
@@ -112,7 +122,11 @@ export default function Metrics({ userId }: MetricsProps) {
 
       {metrics && (
         <>
-          <OverviewMetrics metrics={metrics} />
+          <OverviewMetrics metrics={{
+            totalOrders: metrics.totalOrders,
+            totalRevenue: metrics.totalRevenue,
+            averageOrderValue: metrics.averageOrderValue
+          }} />
           
           <Tabs defaultValue="revenue" className="w-full">
             <TabsList>
@@ -135,7 +149,6 @@ export default function Metrics({ userId }: MetricsProps) {
               <div className="grid gap-6 md:grid-cols-2">
                 <PopularHours popularHours={metrics.popularHours} />
                 <OrderTypeDistribution distribution={metrics.orderTypeDistribution} />
-                {/* Você pode adicionar outro componente aqui se desejar */}
               </div>
             </TabsContent>
           </Tabs>
