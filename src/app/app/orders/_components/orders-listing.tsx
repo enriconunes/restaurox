@@ -9,12 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Label } from '@/components/ui/label'
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, User, Truck, UtensilsCrossed, Calendar, DollarSign, MapPin, Phone, Hash, ClipboardList, SearchCheck } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, User, Truck, UtensilsCrossed, Calendar, DollarSign, MapPin, Phone, Hash, ClipboardList, SearchCheck, Crown } from 'lucide-react'
 import { Order, OrderItem } from '../../(main)/types'
 import { toast } from '@/components/ui/use-toast'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import Link from 'next/link'
 
 interface OrdersListingProps {
   userId: string | undefined
+  planName: string | null | undefined
 }
 
 type OrderStatus = 'pending' | 'canceled' | 'confirmed' | 'done'
@@ -26,7 +29,7 @@ const statusTranslations: Record<OrderStatus, string> = {
   done: 'Concluído'
 }
 
-export default function OrdersListing({ userId }: OrdersListingProps) {
+export default function OrdersListing({ userId, planName }: OrdersListingProps) {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -40,6 +43,8 @@ export default function OrdersListing({ userId }: OrdersListingProps) {
     sortBy: 'createdAt' as 'createdAt' | 'updatedAt',
     sortOrder: 'desc' as 'asc' | 'desc',
   })
+
+  const isFreePlan = planName === 'free'
 
   useEffect(() => {
     if (userId) {
@@ -201,6 +206,37 @@ export default function OrdersListing({ userId }: OrdersListingProps) {
           </Select>
         </div>
       </div>
+
+      {isFreePlan && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 text-primary p-4 rounded-lg mb-6 shadow-sm">
+                <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex items-center">
+                    <div className="bg-primary/20 p-2 rounded-full mr-3">
+                      <Crown className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-sm sm:text-base">Funcionalidade PRO</span>
+                      <span className="text-xs text-primary/80 mt-0.5 sm:hidden">Desbloqueie recursos avançados</span>
+                    </div>
+                  </div>
+                  <Link 
+                    href="/app/settings/billing" 
+                    className="text-sm font-medium bg-primary/20 hover:bg-primary/30 transition-colors px-4 py-2 rounded-full"
+                  >
+                    Confira os benefícios
+                  </Link>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p className="text-sm">Desbloqueie recursos avançados de gerenciamento de pedidos com o plano PRO</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
 
       {loading ? (
         <div className="flex justify-center items-center h-64">

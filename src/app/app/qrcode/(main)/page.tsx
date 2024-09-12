@@ -5,7 +5,7 @@ import {
   DashboardPageMain,
 } from '@/components/dashboard/page'
 
-import { getUserRestaurantDetails } from '../../(main)/actions'
+import { getPlanName, getUserRestaurantDetails } from '../../(main)/actions'
 import QRCodeComponent from '../_components/qr-code'
 import { auth } from '@/services/auth' // Importa o serviço de autenticação
 
@@ -15,7 +15,7 @@ export default async function Page() {
 
   const { error, data } = await getUserRestaurantDetails(session?.user.id as string);
 
-  console.log(data)
+  const planName = await getPlanName()
 
   return (
     <DashboardPage className='max-h-screen overflow-y-scroll'>
@@ -23,7 +23,7 @@ export default async function Page() {
         <DashboardPageHeaderTitle>Compartilhamento</DashboardPageHeaderTitle>
       </DashboardPageHeader>
       <DashboardPageMain>
-        <QRCodeComponent idRestaurant={data?.id!} restaurantName={data?.name!}/>
+        <QRCodeComponent idRestaurant={data?.id!} restaurantName={data?.name!} planName={planName.data as string}/>
       </DashboardPageMain>
     </DashboardPage>
   )

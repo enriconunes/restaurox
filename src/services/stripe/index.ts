@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { config } from '@/config'
 import { prisma } from '../database'
 
+
 export const stripe = new Stripe(config.stripe.secretKey || '', {
   apiVersion: '2024-06-20',
   httpClient: Stripe.createFetchHttpClient(),
@@ -248,3 +249,4 @@ export const getUserCurrentPlan = async (userId: string) => {
     },
   }
 }
+

@@ -22,6 +22,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import InputUploadThing from './input-upload-thing';
 import { useUploadThing } from '@/utils/uploadthing';
+import Link from 'next/link';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface RestaurantData {
   id: string;
@@ -30,6 +35,7 @@ interface RestaurantData {
   contactNumber: string;
   instagramProfileName: string;
   doDelivery: boolean;
+  doOrder: boolean;
   deliveryFee: string;
   deliveryTimeMinutes: string;
   avatarUrl: string;
@@ -37,13 +43,15 @@ interface RestaurantData {
 
 interface EditRestaurantInfoProps {
   data: RestaurantData;
+  planName: string | null | undefined
 }
 
-export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
+export default function EditRestaurantInfo({ data, planName }: EditRestaurantInfoProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { startUpload, isUploading } = useUploadThing("imageUploader");
+  const [showProAlert, setShowProAlert] = useState(false);
 
   const form = useForm<z.infer<typeof updateRestaurantSchema>>({
     resolver: zodResolver(updateRestaurantSchema),
@@ -56,6 +64,7 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
       deliveryTimeMinutes: data.deliveryTimeMinutes,
       doDelivery: data.doDelivery,
       avatarUrl: data.avatarUrl,
+      doOrder: data.doOrder,
     },
   });
 
@@ -98,6 +107,35 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
       setIsSubmitting(false);
     }
   };
+
+  const handleProFeatureClick = () => {
+    setShowProAlert(true);
+    setTimeout(() => setShowProAlert(false), 5000);
+  };
+
+  const isFreePlan = planName === 'free';
+
+  const ProFeatureWrapper = ({ children, label }: { children: React.ReactNode; label: string }) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative">
+            {children}
+            {isFreePlan && (
+              <div className="absolute top-0 right-0 -mt-2 -mr-2">
+                <Badge variant="secondary" className="text-xs font-normal bg-primary/10 text-primary">
+                  PRO
+                </Badge>
+              </div>
+            )}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{label} - Disponível apenas no plano PRO</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 
   return (
     <Form {...form}>
@@ -183,58 +221,114 @@ export default function EditRestaurantInfo({ data }: EditRestaurantInfoProps) {
               </div>
             </div>
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="deliveryFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Taxa de entrega</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite a taxa de entrega" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="deliveryTimeMinutes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tempo de entrega (minutos)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Digite o tempo de entrega" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <ProFeatureWrapper label="Taxa de entrega">
+                <FormField
+                  control={form.control}
+                  name="deliveryFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Taxa de entrega</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Digite a taxa de entrega" 
+                          {...field} 
+                          disabled={isFreePlan}
+                          onClick={isFreePlan ? handleProFeatureClick : undefined}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </ProFeatureWrapper>
+              <ProFeatureWrapper label="Tempo de entrega">
+                <FormField
+                  control={form.control}
+                  name="deliveryTimeMinutes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tempo de entrega (minutos)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Digite o tempo de entrega" 
+                          {...field} 
+                          disabled={isFreePlan}
+                          onClick={isFreePlan ? handleProFeatureClick : undefined}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </ProFeatureWrapper>
             </div>
-            <FormField
-              control={form.control}
-              name="doDelivery"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Delivery disponível
-                    </FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
+            <div className="mt-4 space-y-2">
+              <ProFeatureWrapper label="Permitir pedidos pelo cardápio">
+                <FormField
+                  control={form.control}
+                  name="doOrder"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={isFreePlan}
+                          onClick={isFreePlan ? handleProFeatureClick : undefined}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Permitir pedidos pelo cardápio
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </ProFeatureWrapper>
+              <ProFeatureWrapper label="Permitir pedidos para Delivery">
+                <FormField
+                  control={form.control}
+                  name="doDelivery"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={isFreePlan}
+                          onClick={isFreePlan ? handleProFeatureClick : undefined}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Permitir pedidos para Delivery
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </ProFeatureWrapper>
+            </div>
           </CardContent>
         </Card>
 
         <Button type="submit" className="w-full" disabled={isSubmitting || isUploading}>
           {isSubmitting || isUploading ? 'Salvando...' : 'Salvar alterações'}
         </Button>
+
+        {showProAlert && (
+          <Alert variant="default">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Funcionalidade PRO</AlertTitle>
+            <AlertDescription>
+              Esta funcionalidade está disponível apenas para o plano PRO. 
+              <Link href="/billing" className="ml-1 font-medium underline underline-offset-4">
+                Atualize seu plano agora!
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
       </form>
     </Form>
   );

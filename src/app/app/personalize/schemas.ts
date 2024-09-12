@@ -8,5 +8,6 @@ export const updateRestaurantSchema = z.object({
   deliveryFee: z.string(),
   deliveryTimeMinutes: z.string(),
   doDelivery: z.boolean(),
+  doOrder: z.boolean(),
   avatarUrl: z.string(),
 });

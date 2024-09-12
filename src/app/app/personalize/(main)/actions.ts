@@ -10,6 +10,7 @@ interface UpdatedInfo {
     contactNumber: string;
     instagramProfileName: string;
     doDelivery: boolean;
+    doOrder: boolean;
     deliveryFee: string;
     deliveryTimeMinutes: string;
     // colorThemeCode: string;
@@ -58,6 +59,7 @@ export const updateRestaurantDetailsByRestaurantId = async (
         deliveryFee: updatedInfo.deliveryFee,
         deliveryTimeMinutes: updatedInfo.deliveryTimeMinutes,
         doDelivery: updatedInfo.doDelivery,
+        doOrder: updatedInfo.doOrder,
         avatarUrl: updatedInfo.avatarUrl,
       },
     });
@@ -95,6 +97,7 @@ export const getMainRestaurantDescriptionByIdUser = async (idUser: string) => {
         contactNumber: true,
         instagramProfileName: true,
         doDelivery: true,
+        doOrder: true,
         deliveryFee: true,
         deliveryTimeMinutes: true,
         avatarUrl: true,

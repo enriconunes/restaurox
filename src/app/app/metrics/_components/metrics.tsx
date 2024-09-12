@@ -13,9 +13,13 @@ import RevenueChart from './RevenueChart'
 import CategorySales from './CategorySales'
 import PopularHours from './PopularHours'
 import OrderTypeDistribution from './OrderTypeDistribution'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import Link from 'next/link'
+import { Crown } from 'lucide-react'
 
 interface MetricsProps {
   userId: string | undefined
+  planName: string | null | undefined
 }
 
 type MetricsData = {
@@ -31,13 +35,15 @@ type MetricsData = {
   orderTypeDistribution: Array<{ orderType: string; count: number }>;
 }
 
-export default function Metrics({ userId }: MetricsProps) {
+export default function Metrics({ userId, planName }: MetricsProps) {
   const [metrics, setMetrics] = useState<MetricsData | null>(null)
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
   const [orderType, setOrderType] = useState<'delivery' | 'dine-in' | 'all'>('all')
   const [category, setCategory] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
+
+  const isFreePlan = planName === 'free'
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -70,6 +76,37 @@ export default function Metrics({ userId }: MetricsProps) {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-xl font-bold">Painel de Métricas do Restaurante</h1>
+
+      {isFreePlan && (
+        <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 text-primary p-4 rounded-lg mb-6 shadow-sm">
+            <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center">
+                <div className="bg-primary/20 p-2 rounded-full mr-3">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm sm:text-base">Funcionalidade PRO</span>
+                  <span className="text-xs text-primary/80 mt-0.5 sm:hidden">Desbloqueie recursos avançados</span>
+                </div>
+              </div>
+              <Link 
+                href="/app/settings/billing" 
+                className="text-sm font-medium bg-primary/20 hover:bg-primary/30 transition-colors px-4 py-2 rounded-full"
+              >
+                Confira os benefícios
+              </Link>
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p className="text-sm">Desbloqueie recursos avançados de análises de vendas com o plano PRO</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+      )}
       
       <div className="flex flex-wrap gap-4">
         <div className="flex gap-2">

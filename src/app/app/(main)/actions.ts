@@ -631,3 +631,23 @@ export async function deleteDiscountById(discountId: string) {
     data: 'Discount successfully deleted', // Retorna uma mensagem de sucesso
   };
 }
+
+export const getPlanName = async () => {
+  const session = await auth(); // Obtém a sessão de autenticação
+
+  // Verifica se o usuário está autenticado
+  if (!session?.user?.id) {
+    return {
+      error: 'Not authorized', // Retorna um erro se não estiver autenticado
+      data: null,
+    };
+  }
+
+  // buscar plano do user logado atraves do seu id
+  const plan = await getUserCurrentPlan(session?.user.id as string)
+
+  return {
+      error: null,
+      data: plan.name,
+    };
+}

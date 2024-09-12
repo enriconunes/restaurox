@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react"
 import { QRCode } from 'react-qrcode-logo'
 import Link from "next/link"
 import html2canvas from "html2canvas"
-import { Download, Utensils, Pizza, Coffee, IceCream, Cake, Copy, Check } from 'lucide-react'
+import { Download, Utensils, Pizza, Coffee, IceCream, Cake, Copy, Check, Crown } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface QRCodeParams {
   idRestaurant: string
   restaurantName: string
+  planName: string | null | undefined
 }
 
 const qrCodeStyles = [
@@ -28,23 +30,31 @@ const qrCodeStyles = [
 
 const callToActions = [
   "Acesse o nosso cardápio digital",
-  "Descubra nossos sabores",
   "Explore nosso menu",
-  "Delicie-se com nossas opções",
-  "Embarque nessa jornada gastronômica"
+  "Conheça as nossas opções",
+  "Faça aqui o seu pedido"
 ]
 
-export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCodeParams) {
+export default function QRCodeComponent({ idRestaurant, restaurantName, planName }: QRCodeParams) {
   const [selectedStyle, setSelectedStyle] = useState(qrCodeStyles[0])
   const [qrColor, setQrColor] = useState("#000000")
   const [bgColor, setBgColor] = useState("#FFFFFF")
   const [selectedCta, setSelectedCta] = useState(callToActions[0])
   const [customCta, setCustomCta] = useState("")
   const [isCopied, setIsCopied] = useState(false)
+  const [showProDialog, setShowProDialog] = useState(false)
   const qrCodeRef = useRef<HTMLDivElement>(null)
   const qrCodeLink = `http://localhost:3000/menu?id=${idRestaurant}`
 
+  const isFreePlan = planName === 'free'
+  const isStandardConfig = selectedStyle.name === 'Classic' && qrColor === "#000000" && bgColor === "#FFFFFF" && selectedCta === "Acesse o nosso cardápio digital"
+
   const downloadCode = () => {
+    if (isFreePlan && !isStandardConfig) {
+      setShowProDialog(true)
+      return
+    }
+
     if (qrCodeRef.current) {
       html2canvas(qrCodeRef.current, {
         scale: 4,
@@ -57,6 +67,35 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
         link.click()
       })
     }
+  }
+
+  const resetToStandardConfig = () => {
+    setSelectedStyle(qrCodeStyles[0])
+    setQrColor("#000000")
+    setBgColor("#FFFFFF")
+    setSelectedCta("Acesse o nosso cardápio digital")
+    setCustomCta("")
+  }
+
+  const downloadStandardCode = () => {
+    resetToStandardConfig()
+    setShowProDialog(false)
+    
+    // We need to wait for the state to update before capturing the QR code
+    setTimeout(() => {
+      if (qrCodeRef.current) {
+        html2canvas(qrCodeRef.current, {
+          scale: 4,
+          useCORS: true,
+          backgroundColor: "#FFFFFF",
+        }).then(function(canvas) {
+          const link = document.createElement('a')
+          link.download = `${restaurantName} - QRCode Standard.png`
+          link.href = canvas.toDataURL("image/png")
+          link.click()
+        })
+      }
+    }, 0)
   }
 
   const copyToClipboard = () => {
@@ -190,6 +229,32 @@ export default function QRCodeComponent({ idRestaurant, restaurantName }: QRCode
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={showProDialog} onOpenChange={setShowProDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Crown className="w-5 h-5 mr-2 text-yellow-500" />
+              Funcionalidade PRO
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            A personalização só está disponível para o plano PRO.
+          </DialogDescription>
+            <Button
+              variant="outline"
+              onClick={downloadStandardCode}
+              className="w-full"
+            >
+              Fazer download do QR Code padrão
+            </Button>
+            <Button asChild className="w-full">
+              <Link href="/app/settings/billing">
+                Conheça o plano PRO
+              </Link>
+            </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
