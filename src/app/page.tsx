@@ -8,6 +8,7 @@ import Pricing from './_components/landing/pricing'
 import Testimonials from './_components/landing/testimonials'
 import CTASection from './_components/landing/cta-section'
 import Footer from './_components/landing/footer'
+import Contact from './_components/landing/contact'
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <Pricing />
       <Testimonials />
       <CTASection />
+      <Contact />
       <Footer />
     </main>
   )

@@ -9,7 +9,6 @@ const plans = [
       "Criação de cardápio digital",
       "Geração de QR code",
       "Atualizações em tempo real",
-      "Análises básicas"
     ]
   },
   {
@@ -17,9 +16,9 @@ const plans = [
     price: "R$59,90/mês",
     features: [
       "Todos os recursos do plano Básico",
-      "Pedidos online",
+      "Pedidos para consumo local e para delivery",
       "Personalização de marca",
-      "Análises avançadas",
+      "Análises de vendas avançadas",
       "Suporte prioritário"
     ]
   },
@@ -29,8 +28,6 @@ const plans = [
     features: [
       "Todos os recursos do plano Pro",
       "Suporte para múltiplas unidades",
-      "Acesso à API",
-      "Gerente de conta dedicado",
       "Integrações personalizadas"
     ]
   }

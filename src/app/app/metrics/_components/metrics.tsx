@@ -75,7 +75,7 @@ export default function Metrics({ userId, planName }: MetricsProps) {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-xl font-bold">Painel de Métricas do Restaurante</h1>
+      <h1 className="text-lg font-bold">Painel de Métricas</h1>
 
       {isFreePlan && (
         <TooltipProvider>

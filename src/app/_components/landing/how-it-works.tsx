@@ -1,5 +1,7 @@
+'use client'
+
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+import ComputerMockup from './computer-mockup'
 
 const steps = [
   {
@@ -16,25 +18,32 @@ const steps = [
   },
   {
     title: "Comece a Usar",
-    description: "Publique seu cardápio digital e comece a aceitar pedidos."
+    description: "O seu cardápio já estará pronto para alavancar suas vendas."
   }
 ]
 
 export default function HowItWorks() {
+  const images = [
+    '/print-pc-01.png',
+    '/print-pc-02.png',
+    '/print-pc-03.png',
+    '/print-pc-04.png'
+  ]
+
   return (
     <section id="como-funciona" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">Como o Restaurox Funciona</h2>
-        <div className="flex flex-col md:flex-row items-center justify-between">
+        <div className="flex flex-col items-center justify-between">
           <motion.div 
-            className="md:w-1/2 mb-10 md:mb-0"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            className="w-full mb-10"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Image src="/placeholder.svg" alt="Como o Restaurox Funciona" width={500} height={500} className="rounded-lg shadow-xl" />
+            <ComputerMockup images={images} />
           </motion.div>
-          <div className="md:w-1/2 md:pl-12">
+          <div className="w-full">
             {steps.map((step, index) => (
               <motion.div 
                 key={index}

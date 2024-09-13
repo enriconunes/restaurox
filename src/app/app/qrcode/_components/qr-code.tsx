@@ -44,7 +44,7 @@ export default function QRCodeComponent({ idRestaurant, restaurantName, planName
   const [isCopied, setIsCopied] = useState(false)
   const [showProDialog, setShowProDialog] = useState(false)
   const qrCodeRef = useRef<HTMLDivElement>(null)
-  const qrCodeLink = `http://localhost:3000/menu?id=${idRestaurant}`
+  const qrCodeLink = `https://restaurox/menu?id=${idRestaurant}`
 
   const isFreePlan = planName === 'free'
   const isStandardConfig = selectedStyle.name === 'Classic' && qrColor === "#000000" && bgColor === "#FFFFFF" && selectedCta === "Acesse o nosso cardápio digital"

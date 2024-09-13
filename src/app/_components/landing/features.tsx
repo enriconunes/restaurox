@@ -5,12 +5,12 @@ const features = [
   {
     icon: Clock,
     title: "Atualizações em Tempo Real",
-    description: "Atualize instantaneamente seus itens de menu, preços e disponibilidade em todas as plataformas."
+    description: "Atualize instantaneamente seu produtos, preços, disponibilidade e muito mais."
   },
   {
     icon: QrCode,
     title: "QR Codes Personalizados",
-    description: "Gere códigos QR únicos para cada mesa ou local, melhorando a experiência do cliente."
+    description: "Gere códigos QR únicos e personalizados para melhorar a experiência do cliente e a exclusividade do seu negócio."
   },
   {
     icon: Truck,
@@ -20,7 +20,7 @@ const features = [
   {
     icon: BarChart,
     title: "Análise de Vendas",
-    description: "Obtenha insights valiosos sobre o desempenho do seu menu e preferências dos clientes."
+    description: "Obtenha insights valiosos sobre o desempenho do seu menu e das suas vendas."
   }
 ]
 
@@ -28,7 +28,7 @@ export default function Features() {
   return (
     <section id="recursos" className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">Recursos Poderosos para Seu Restaurante</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">Recursos Poderosos Para o Seu Negócio</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
             <motion.div 

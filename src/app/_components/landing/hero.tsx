@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import PhoneMockup from './mockup'
 
 export default function Hero() {
-  const images = ['/print-01.PNG', '/print-02.PNG']
+  const images = ['/print-01.PNG', '/print-02.PNG', '/print-03.PNG', '/print-04.PNG', '/print-05.PNG', '/print-06.PNG']
   const titles = ['Cardápio visto pelos clientes', 'Painel de gerenciamento do restaurante']
 
   return (
