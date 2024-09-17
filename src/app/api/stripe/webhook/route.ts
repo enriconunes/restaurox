@@ -6,6 +6,10 @@ import {
 
 import { headers } from 'next/headers'
 
+// Configuração para evitar pré-renderização
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 // este webhook é usado pelo stripe e é configurado pelo comando:
 // stripe listen --forward-to localhost:3000/api/stripe/webhook
 // apos 'stripe login'

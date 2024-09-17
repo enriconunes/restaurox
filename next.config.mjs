@@ -10,6 +10,9 @@ const nextConfig = {
             },
         ],
     },
+    // Adicione estas configurações para melhorar o desempenho
+    reactStrictMode: true,
+    swcMinify: true,
 };
 
 export default nextConfig;
