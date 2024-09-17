@@ -24,10 +24,10 @@ const steps = [
 
 export default function HowItWorks() {
   const images = [
-    '/print-pc-01.png',
-    '/print-pc-02.png',
-    '/print-pc-03.png',
-    '/print-pc-04.png'
+    '/print-pc-01.PNG',
+    '/print-pc-02.PNG',
+    '/print-pc-03.PNG',
+    '/print-pc-04.PNG'
   ]
 
   return (

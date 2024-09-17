@@ -5,7 +5,7 @@ import { getUrl } from '@/lib/get-url'
 
 export function middleware(request: NextRequest) {
 
-    const token = request.cookies.get('authjs.session-token')
+    const token = request.cookies.get('authjs.session-token') ? request.cookies.get('authjs.session-token') : request.cookies.get('_Secure-authjs.session-token')
     const pathname = request.nextUrl.pathname
 
     // se estiver na pagina auth e tiver um token ativo, redireciona para /app
