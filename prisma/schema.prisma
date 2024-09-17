@@ -1,6 +1,12 @@
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./dev.db" // db local provisória
+// }
+
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db" // db local provisória
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 generator client {
@@ -107,7 +113,7 @@ model Restaurant {
   doOrder               Boolean         @default(true)
   deliveryFee           String          @default("5.00")
   deliveryTimeMinutes   String          @default("30")
-  avatarUrl             String          @default("https://utfs.io/f/1af4aa51-b003-476c-9c1d-d5d9b491058e-801omg.jpg")
+  avatarUrl             String          @default("https://utfs.io/f/gEv28CzID47bTFGj9BQKFofyL9G7OErVlpW0hXQYP8BgaAqm")
   coverUrl              String          @default("https://utfs.io/f/c63b9ac8-ad79-48f0-a8b3-2c9cc5d4fd66-vyr1ud.png")
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
