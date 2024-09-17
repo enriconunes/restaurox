@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { addDays, format } from "date-fns"
+import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
@@ -16,8 +16,8 @@ import {
 
 interface DatePickerWithRangeProps {
   className?: string
-  dateRange: DateRange
-  setDateRange: React.Dispatch<React.SetStateAction<DateRange>>
+  dateRange: DateRange | undefined
+  setDateRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>
 }
 
 export function DatePickerWithRange({
@@ -54,7 +54,6 @@ export function DatePickerWithRange({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            initialFocus
             mode="range"
             defaultMonth={dateRange?.from}
             selected={dateRange}
