@@ -22,7 +22,7 @@ export default async function Page({
   }
 
   return (
-    <main>
+    <main className='bg-white'>
       <RestaurantHeader restaurant={data} />
       <MenuListing restaurant={data} />
       <Footer colorThemeCode={data.colorThemeCode}/>

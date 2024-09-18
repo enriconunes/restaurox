@@ -3,7 +3,7 @@ import { Phone, Mail, Clock } from 'lucide-react'
 
 export default function Contact() {
   return (
-    <section id="contato" className="py-12 md:py-20">
+    <section id="contato" className="py-12 md:py-20 bg-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

@@ -25,7 +25,7 @@ export default function Footer({colorThemeCode}: FooterProps) {
             </p>
             <Link 
               href="/" 
-              className="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md border-boder text-white hover:brightness-90 transition duration-150 ease-in-out"
+              className="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md border-gray-100 text-white hover:brightness-90 transition duration-150 ease-in-out"
               style={{ backgroundColor: darkenColor(colorThemeCode, 70) }}
             >
               Crie agora seu cardápio digital grátis

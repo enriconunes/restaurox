@@ -150,15 +150,15 @@ const MenuCart: React.FC<MenuCartProps> = ({ colorThemeCode, doOrder, doDelivery
                 <X size={24} />
               </button>
             </div>
-            <div className="flex border-b">
+            <div className="flex border-b border-gray-200 text-gray-700">
               <button
-                className={`flex-1 py-2 px-4 ${activeTab === 'cart' ? 'bg-gray-200' : ''}`}
+                className={`flex-1 py-2 px-4 ${activeTab === 'cart' ? 'bg-gray-200' : 'bg-white'}`}
                 onClick={() => setActiveTab('cart')}
               >
                 Carrinho
               </button>
               <button
-                className={`flex-1 py-2 px-4 ${activeTab === 'tracking' ? 'bg-gray-200' : ''}`}
+                className={`flex-1 py-2 px-4 ${activeTab === 'tracking' ? 'bg-gray-200' : 'bg-white'}`}
                 onClick={() => setActiveTab('tracking')}
               >
                 Acompanhar Pedido
@@ -338,8 +338,8 @@ const MenuCart: React.FC<MenuCartProps> = ({ colorThemeCode, doOrder, doDelivery
               )}
             </div>
             {activeTab === 'cart' && (
-              <div className="p-4 border-t">
-                <div className="flex justify-between items-center mb-4">
+              <div className="p-4 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-4 text-gray-800">
                   <span className="font-semibold">Total:</span>
                   <span className="font-bold">R$ {totalPrice.toFixed(2)}</span>
                 </div>

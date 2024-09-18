@@ -39,8 +39,8 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
                 className="rounded-xl p-0.5 bg-white shadow-md"
               />
             </div>
-            <h1 className="text-2xl font-bold mb-1">{restaurant.name}</h1>
-            <p className="text-sm text-gray-600 mb-4">{restaurant.address}</p>
+            <h1 className="text-2xl text-gray-800 font-bold mb-1">{restaurant.name}</h1>
+            <p className="text-sm text-gray-700 mb-4">{restaurant.address}</p>
             <OpeningHoursButton 
               openingHours={restaurant.openingHours} 
               colorThemeCode={restaurant.colorThemeCode}
@@ -50,11 +50,11 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
       </div>
       <div className="container mx-auto px-4 py-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center text-sm sm:justify-center sm:space-x-4 space-y-2 sm:space-y-0">
-          <span className="flex items-center">
+          <span className="flex items-center text-gray-600">
             <Phone className="w-4 h-4 mr-1 text-gray-600" />
             {restaurant.contactNumber}
           </span>
-          <Link href={`https://www.instagram.com/${restaurant.instagramProfileName}/`} target='blank' className="flex items-center">
+          <Link href={`https://www.instagram.com/${restaurant.instagramProfileName}/`} target='blank' className="flex items-center text-gray-600">
             <Instagram className="w-4 h-4 mr-1 text-gray-600" />
             {restaurant.instagramProfileName}
           </Link>

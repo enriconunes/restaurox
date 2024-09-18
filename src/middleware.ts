@@ -8,8 +8,6 @@ export function middleware(request: NextRequest) {
     const token = request.cookies.get('authjs.session-token') ? request.cookies.get('authjs.session-token') : request.cookies.get('__Secure-authjs.session-token')
     const pathname = request.nextUrl.pathname
 
-    console.log("Token recebido: ", token)
-
     // se estiver na pagina auth e tiver um token ativo, redireciona para /app
     if (pathname === '/auth' && token) {
     return NextResponse.redirect(new URL(getUrl('/app')))

@@ -188,72 +188,40 @@ export const getUserRestaurantDetails = async (idUser: string) => {
 
 // Função para criar ou atualizar uma categoria
 export async function upsertCategory(input: z.infer<typeof upsertCategorySchema>) {
-  const session = await auth(); // Obtém a sessão de autenticação
+  const session = await auth();
 
-  // Verifica se o usuário está autenticado
   if (!session?.user?.id) {
-    return {
-      error: 'Not authorized', // Retorna um erro se não estiver autenticado
-      data: null,
-    };
+    throw new Error('Not authorized');
   }
 
-  // Se um ID for fornecido, a categoria será atualizada
   if (input.id) {
-    // Verifica se a categoria existe e pertence ao usuário autenticado
     const category = await prisma.itemCategory.findUnique({
-      where: {
-        id: input.id,
-      },
-      select: {
-        id: true, // Seleciona apenas o ID da categoria
-      },
+      where: { id: input.id },
+      include: { items: true }, // Include items
     });
 
-    // Retorna um erro se a categoria não for encontrada
     if (!category) {
-      return {
-        error: 'Not found',
-        data: null,
-      };
+      throw new Error('Category not found');
     }
 
-    // Atualiza a categoria com os novos dados
-    const updatedCategory = await prisma.itemCategory.update({
-      where: {
-        id: input.id,
-      },
-      data: {
-        name: input.name, // Atualiza o nome da categoria
-      },
+    return await prisma.itemCategory.update({
+      where: { id: input.id },
+      data: { name: input.name },
+      include: { items: true }, // Include items in the update result
     });
-
-    return {
-      error: null,
-      data: updatedCategory, // Retorna a categoria atualizada
-    };
   }
 
-  // Verifica se o nome e o restaurantId foram fornecidos para criar uma nova categoria
   if (!input.name || !input.restaurantId) {
-    return {
-      error: 'Name and Restaurant ID are required', // O nome e o restaurantId são obrigatórios para criar uma categoria
-      data: null,
-    };
+    throw new Error('Name and Restaurant ID are required');
   }
 
-  // Cria uma nova categoria com os dados fornecidos
-  const category = await prisma.itemCategory.create({
+  return await prisma.itemCategory.create({
     data: {
-      name: input.name, // Define o nome da nova categoria
-      restaurantId: input.restaurantId, // Associa a categoria ao restaurante fornecido
+      name: input.name,
+      restaurantId: input.restaurantId,
     },
+    include: { items: true }, // Include items in the create result
   });
-
-  return {
-    error: null,
-    data: category, // Retorna a categoria criada
-  };
 }
 
 // Deletar uma categoria de itens pelo seu id

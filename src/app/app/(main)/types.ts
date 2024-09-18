@@ -41,6 +41,7 @@ export interface ItemCategory {
   name: string;
   items: Item[];
   isEditing?: boolean; // Caso seja utilizado na sua interface
+  isExpanded?: boolean
 }
 
 // Opening Hours Interface

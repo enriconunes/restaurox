@@ -56,7 +56,7 @@ type EditItemFormValues = z.infer<typeof editItemSchema>
 interface EditItemButtonProps {
   item: Item
   onSave: (updatedItem: Item) => void
-  onDelete: (id: string) => Promise<void>
+  onDelete: () => Promise<void>
 }
 
 export function EditItemButton({ item, onSave, onDelete }: EditItemButtonProps) {
@@ -136,7 +136,7 @@ export function EditItemButton({ item, onSave, onDelete }: EditItemButtonProps) 
       if (item.imageUrl) {
         await deleteOldImage(item.imageUrl);
       }
-      await onDelete(item.id)
+      await onDelete()
       setIsDeleteDialogOpen(false)
       toast({
         title: 'Sucesso',
